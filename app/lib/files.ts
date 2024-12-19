@@ -33,10 +33,19 @@ export async function getUserFiles(userId: string, month?: string) {
 
 export const uploadFile = async (file: File): Promise<UploadResult> => {
   try {
-    // Implementation will be added later
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData,
+    });
+
+    const data = await response.json();
     return {
-      success: true,
-      fileUrl: 'url_here'
+      success: response.ok,
+      fileUrl: data.fileUrl,
+      error: !response.ok ? data.error : undefined
     };
   } catch (error) {
     return {
