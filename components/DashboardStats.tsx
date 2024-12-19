@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { DocumentDocument } from '@/lib/types';
+// import { DocumentDocument } from '@/lib/types';
 import LoadingSpinner from './LoadingSpinner';
 
 interface Stats {

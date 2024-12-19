@@ -4,7 +4,7 @@ import { UserButton, useUser } from '@clerk/nextjs';
 
 export default function DashboardHeader() {
   const { user, isLoaded } = useUser();
-  const role = user?.publicMetadata?.role || 'client';
+//   const role = user?.publicMetadata?.role || 'client';
 
   if (!isLoaded) return null;
 

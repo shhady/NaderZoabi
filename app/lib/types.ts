@@ -17,4 +17,10 @@ export interface BlogPost {
   coverImage: string;
   date: Date;
   category: string;
+}
+
+export interface UploadResult {
+  success: boolean;
+  fileUrl?: string;
+  error?: string;
 } 

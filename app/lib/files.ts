@@ -1,5 +1,6 @@
 import { connectToDB } from './db';
 import { Document } from './models/Document';
+import { UploadResult } from './types';
 
 export async function getUserFiles(userId: string, month?: string) {
   await connectToDB();
@@ -23,5 +24,16 @@ export async function getUserFiles(userId: string, month?: string) {
 } 
 
 export const uploadFile = async (file: File): Promise<UploadResult> => {
-  // ...
-} 
+  try {
+    // Implementation here
+    return {
+      success: true,
+      fileUrl: 'url_here'
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    };
+  }
+}; 

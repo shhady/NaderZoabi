@@ -15,7 +15,7 @@ export default function BlogManagementPage() {
     return (
       <div className="text-center py-10">
         <h2 className="text-2xl font-bold text-red-600">Access Denied</h2>
-        <p className="text-gray-600 mt-2">You don't have permission to view this page.</p>
+        <p className="text-gray-600 mt-2">You don&apos;t have permission to view this page.</p>
       </div>
     );
   }
