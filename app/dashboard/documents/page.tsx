@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useUser } from '@clerk/nextjs';
+// import { useUser } from '@clerk/nextjs';
 
 interface Document {
   _id: string;
