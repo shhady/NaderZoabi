@@ -2,10 +2,18 @@ import { connectToDB } from './db';
 import { Document } from './models/Document';
 import { UploadResult } from './types';
 
+interface FileQuery {
+  userId: string;
+  uploadedAt?: {
+    $gte: Date;
+    $lt: Date;
+  };
+}
+
 export async function getUserFiles(userId: string, month?: string) {
   await connectToDB();
   
-  const query: any = { userId };
+  const query: FileQuery = { userId };
   
   if (month) {
     const startDate = new Date(month);
@@ -21,11 +29,11 @@ export async function getUserFiles(userId: string, month?: string) {
     .limit(10);
 
   return JSON.parse(JSON.stringify(files));
-} 
+}
 
 export const uploadFile = async (file: File): Promise<UploadResult> => {
   try {
-    // Implementation here
+    // Implementation will be added later
     return {
       success: true,
       fileUrl: 'url_here'

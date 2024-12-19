@@ -1,86 +1,91 @@
-// 'use client';
+'use client';
 
-// import { useState, useRef } from 'react';
-// import LoadingSpinner from './LoadingSpinner';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
-// interface FileUploadProps {
-//   onUploadComplete?: (document: any) => void;
-//   uploadedFor?: string;
-// }
+interface UploadResponse {
+  success: boolean;
+  fileUrl?: string;
+  error?: string;
+}
 
-// export default function FileUpload({ onUploadComplete, uploadedFor }: FileUploadProps) {
-//   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-//   const [uploading, setUploading] = useState(false);
-//   const fileInputRef = useRef<HTMLInputElement>(null);
+interface FileUploadProps {
+  onUploadComplete?: (response: UploadResponse) => void;
+  onUploadError?: (error: Error) => void;
+  uploadedFor?: string;
+}
 
-//   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-//     if (e.target.files && e.target.files[0]) {
-//       setSelectedFile(e.target.files[0]);
-//     }
-//   };
+export default function FileUpload({ onUploadComplete, onUploadError, uploadedFor }: FileUploadProps) {
+  const [uploading, setUploading] = useState(false);
+  const router = useRouter();
 
-//   const handleUpload = async () => {
-//     if (!selectedFile) return;
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const fileInput = form.querySelector<HTMLInputElement>('input[type="file"]');
+    const file = fileInput?.files?.[0];
 
-//     setUploading(true);
-//     const formData = new FormData();
-//     formData.append("file", selectedFile);
-//     if (uploadedFor) {
-//       formData.append("uploadedFor", uploadedFor);
-//     }
+    if (!file) {
+      alert('Please select a file');
+      return;
+    }
 
-//     try {
-//       const response = await fetch("/api/upload", {
-//         method: "POST",
-//         body: formData,
-//       });
+    setUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+    if (uploadedFor) {
+      formData.append('uploadedFor', uploadedFor);
+    }
 
-//       if (!response.ok) throw new Error("Upload failed");
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
 
-//       const document = await response.json();
-//       onUploadComplete?.(document);
-//       setSelectedFile(null);
-//       if (fileInputRef.current) fileInputRef.current.value = "";
-//     } catch (error: any) {
-//       console.error("Upload error:", error);
-//       alert(`Failed to upload file: ${error?.message || 'Unknown error'}`);
-//     } finally {
-//       setUploading(false);
-//     }
-//   };
+      const data: UploadResponse = await response.json();
 
-//   return (
-//     <div className="space-y-4">
-//       <div>
-//         <label className="block text-sm font-medium text-gray-700 mb-2">
-//           בחר קובץ
-//         </label>
-//         <input
-//           ref={fileInputRef}
-//           type="file"
-//           onChange={handleFileChange}
-//           accept=".pdf,.jpg,.jpeg,.png"
-//           className="block w-full text-sm text-gray-500 file:py-2 file:px-4 file:rounded-md file:bg-[#B78628] file:text-white hover:file:bg-[#96691E] cursor-pointer"
-//         />
-//       </div>
+      if (response.ok) {
+        onUploadComplete?.(data);
+        router.refresh();
+      } else {
+        throw new Error(data.error || 'Upload failed');
+      }
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error('Unknown error occurred');
+      onUploadError?.(err);
+      console.error('Error uploading file:', err);
+    } finally {
+      setUploading(false);
+    }
+  };
 
-//       {selectedFile && (
-//         <div className="text-sm text-gray-600">
-//           קובץ נבחר: {selectedFile.name}
-//         </div>
-//       )}
-
-//       <button
-//         onClick={handleUpload}
-//         disabled={!selectedFile || uploading}
-//         className={`w-full px-4 py-2 text-white rounded-md ${
-//           uploading || !selectedFile
-//             ? "bg-gray-400 cursor-not-allowed"
-//             : "bg-[#B78628] hover:bg-[#96691E]"
-//         }`}
-//       >
-//         {uploading ? <LoadingSpinner /> : "העלה קובץ"}
-//       </button>
-//     </div>
-//   );
-// } 
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <label className="block text-sm font-medium text-gray-700">
+          Upload File
+        </label>
+        <input
+          type="file"
+          accept=".pdf,.jpg,.jpeg,.png"
+          className="mt-1 block w-full text-sm text-gray-500
+            file:mr-4 file:py-2 file:px-4
+            file:rounded-md file:border-0
+            file:text-sm file:font-semibold
+            file:bg-[#B78628] file:text-white
+            hover:file:bg-[#96691E]"
+          required
+        />
+      </div>
+      <button
+        type="submit"
+        disabled={uploading}
+        className="w-full px-4 py-2 bg-[#B78628] text-white rounded-md
+          hover:bg-[#96691E] disabled:bg-gray-400 disabled:cursor-not-allowed"
+      >
+        {uploading ? 'Uploading...' : 'Upload'}
+      </button>
+    </form>
+  );
+} 
