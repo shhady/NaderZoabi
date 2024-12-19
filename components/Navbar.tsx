@@ -1,5 +1,6 @@
 'use client'
 import { SignInButton, SignUpButton, UserButton, useUser } from '@clerk/nextjs';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect } from 'react';
 
@@ -46,26 +47,9 @@ export default function Navbar() {
   return (
     <nav className="bg-white shadow-sm" dir="rtl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16 items-center">
-          <Link href="/" className="text-2xl font-bold text-[#2C3E50]">
-            פורטל רואה חשבון
-          </Link>
+        <div className="flex justify-between  items-center py-4">
           
-          <div className="hidden md:block">
-            <div className="flex items-center space-x-4 space-x-reverse">
-              <Link href="/services" className="text-gray-600 hover:text-[#B78628]">
-                שירותים
-              </Link>
-              <Link href="/blog" className="text-gray-600 hover:text-[#B78628]">
-                בלוג
-              </Link>
-              <Link href="/contact" className="text-gray-600 hover:text-[#B78628]">
-                צור קשר
-              </Link>
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-4 space-x-reverse">
+        <div className="flex items-center space-x-4 space-x-reverse">
             {!isLoaded ? null : !user ? (
               <>
                 <SignInButton mode="modal">
@@ -81,16 +65,34 @@ export default function Navbar() {
               </>
             ) : (
               <div className="flex items-center space-x-4 space-x-reverse">
+                                <UserButton afterSignOutUrl="/" />
+
                 <Link 
                   href="/dashboard" 
                   className="text-gray-600 hover:text-gray-900"
                 >
                   לוח בקרה
                 </Link>
-                <UserButton afterSignOutUrl="/" />
               </div>
             )}
           </div>
+          <div className="hidden md:block">
+            <div className="flex items-center space-x-4 space-x-reverse">
+              <Link href="/services" className="text-gray-600 hover:text-[#B78628]">
+                שירותים
+              </Link>
+              <Link href="/blog" className="text-gray-600 hover:text-[#B78628]">
+                בלוג
+              </Link>
+              <Link href="/contact" className="text-gray-600 hover:text-[#B78628]">
+                צור קשר
+              </Link>
+            </div>
+          </div>
+          <Link href="/" className="text-2xl font-bold text-[#2C3E50]">
+           <Image src={'/majd-logo.png'} alt="majd-logo" width={100} height={50} className='w-16'/>
+          </Link>
+         
         </div>
       </div>
     </nav>

@@ -8,13 +8,14 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    const {id} = await params;
     const user = await currentUser();
     if (!user) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
     await connectToDB();
-    const dbUser = await User.findOne({ clerkId: params.id }).lean();
+    const dbUser = await User.findOne({ clerkId: id }).lean();
 
     if (!dbUser) {
       return new NextResponse("User not found", { status: 404 });
