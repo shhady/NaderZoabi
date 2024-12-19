@@ -1,13 +1,15 @@
 import mongoose from 'mongoose';
 
-interface GlobalWithMongoose {
-  mongoose: {
-    conn: typeof mongoose | null;
-    promise: Promise<typeof mongoose> | null;
-  } | undefined;
+interface CachedMongoose {
+  conn: typeof mongoose | null;
+  promise: Promise<typeof mongoose> | null;
 }
 
-declare const global: GlobalWithMongoose;
+// Declare a global variable for caching the connection
+declare global {
+  // Ensure this is only added to the global object during development
+  var mongoose: CachedMongoose | undefined;
+}
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
@@ -15,10 +17,11 @@ if (!MONGODB_URI) {
   throw new Error('Please define the MONGODB_URI environment variable inside .env.local');
 }
 
-let cached = global.mongoose;
+// Use a global variable to maintain the cache in development
+let cached: CachedMongoose = global.mongoose || { conn: null, promise: null };
 
-if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null };
+if (process.env.NODE_ENV !== 'production') {
+  global.mongoose = cached;
 }
 
 export const connectToDB = async () => {
