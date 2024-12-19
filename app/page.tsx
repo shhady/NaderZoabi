@@ -1,145 +1,96 @@
-import Link from 'next/link';
-import Image from 'next/image';
-import { CalendlyEmbed } from '../components/CalendlyEmbed';
+import { CalendlyEmbed } from "@/components/CalendlyEmbed";
+import Footer from "@/components/Footer";
 
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen">
+    <main className="min-h-screen" dir="rtl">
       {/* Hero Section */}
-      <section className="relative h-[90vh] flex items-center justify-center gradient-bg">
-        <div className="container mx-auto px-6 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-            Your Trusted Accounting Partner
+      <section className="bg-gradient-to-b from-[#2C3E50] to-[#1a2530] text-white py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h1 className="text-4xl md:text-5xl font-bold mb-6">
+            משרד רואי חשבון זועבי
           </h1>
-          <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-2xl mx-auto">
-            Professional financial guidance to help your business thrive in today's economy
+          <p className="text-xl mb-8">
+            פתרונות חשבונאות מקצועיים לעסקים ויחידים
           </p>
-          <Link 
-            href="#schedule"
-            className="inline-block px-8 py-4 bg-[#B78628] text-white rounded-md hover:bg-[#96691E] transition-colors"
+          <a
+            href="/contact"
+            className="bg-[#B78628] text-white px-8 py-3 rounded-md hover:bg-[#96691E] transition-colors"
           >
-            Schedule a Meeting
-          </Link>
+            צור קשר
+          </a>
         </div>
       </section>
 
-      {/* Services Section */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-6">
-          <h2 className="text-3xl md:text-4xl font-bold text-center text-[#2C3E50] mb-12">
-            Our Services
+      {/* About Section */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-center text-[#2C3E50] mb-12">
+            אודותינו
           </h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            {services.map((service, index) => (
-              <div 
-                key={index}
-                className="p-6 rounded-lg border border-gray-200 hover:shadow-lg transition-shadow"
-              >
-                <div className="w-12 h-12 mb-4">
-                  <Image
-                    src={service.icon}
-                    alt={service.title}
-                    width={48}
-                    height={48}
-                    className="text-[#B78628]"
-                  />
-                </div>
-                <h3 className="text-xl font-semibold mb-3 text-[#2C3E50]">
-                  {service.title}
+          <div className="grid md:grid-cols-2 gap-12">
+            <div className="space-y-6">
+              <div className="bg-gray-50 p-6 rounded-lg">
+                <h3 className="text-xl font-semibold text-[#2C3E50] mb-4">
+                  נאדר זועבי
                 </h3>
                 <p className="text-gray-600">
-                  {service.description}
+                  רואה חשבון מוסמך עם ניסיון של למעלה מ-15 שנה בתחום. מתמחה בייעוץ מס, 
+                  ביקורת דוחות כספיים, וליווי עסקים. בוגר האוניברסיטה העברית בירושלים, 
+                  חבר לשכת רואי החשבון בישראל.
                 </p>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Appointment Section */}
-      <section id="schedule" className="py-20 bg-gray-50">
-        <div className="container mx-auto px-6">
-          <h2 className="text-3xl md:text-4xl font-bold text-center text-[#2C3E50] mb-12">
-            Schedule a Consultation
-          </h2>
-          <div className="max-w-4xl mx-auto">
-            <CalendlyEmbed />
-          </div>
-        </div>
-      </section>
-
-      {/* Blog Preview Section */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-6">
-          <h2 className="text-3xl md:text-4xl font-bold text-center text-[#2C3E50] mb-12">
-            Latest Insights
-          </h2>
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {blogPosts.map((post, index) => (
-              <div 
-                key={index}
-                className="rounded-lg overflow-hidden border border-gray-200"
-              >
-                <div className="relative h-48">
-                  <Image
-                    src={post.image}
-                    alt={post.title}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                <div className="p-6">
-                  <h3 className="text-xl font-semibold mb-3 text-[#2C3E50]">
-                    {post.title}
-                  </h3>
-                  <p className="text-gray-600 mb-4">
-                    {post.excerpt}
-                  </p>
-                  <Link 
-                    href={post.link}
-                    className="text-[#B78628] hover:text-[#96691E] font-medium"
-                  >
-                    Read More →
-                  </Link>
-                </div>
+              <div className="bg-gray-50 p-6 rounded-lg">
+                <h3 className="text-xl font-semibold text-[#2C3E50] mb-4">
+                  מגד זועבי
+                </h3>
+                <p className="text-gray-600">
+                  רואה חשבון מוסמך המתמחה בליווי עסקים קטנים ובינוניים, תכנון מס, 
+                  וייעוץ פיננסי. בעל ניסיון עשיר בעבודה מול רשויות המס ומוסדות פיננסיים. 
+                  בוגר אוניברסיטת תל אביב.
+                </p>
               </div>
-            ))}
+            </div>
+            <div className="space-y-6">
+              <div className="bg-gray-50 p-6 rounded-lg">
+                <h3 className="text-xl font-semibold text-[#2C3E50] mb-4">
+                  השירותים שלנו
+                </h3>
+                <ul className="list-disc list-inside space-y-2 text-gray-600">
+                  <li>ייעוץ מס וחשבונאות</li>
+                  <li>ביקורת דוחות כספיים</li>
+                  <li>תכנון מס אסטרטגי</li>
+                  <li>ליווי עסקי שוטף</li>
+                  <li>הנהלת חשבונות</li>
+                  <li>ייצוג מול רשויות המס</li>
+                </ul>
+              </div>
+              <div className="bg-gray-50 p-6 rounded-lg">
+                <h3 className="text-xl font-semibold text-[#2C3E50] mb-4">
+                  המשרד שלנו
+                </h3>
+                <p className="text-gray-600">
+                  משרדנו, הממוקם במרכז הארץ, מספק שירותי ראיית חשבון וייעוץ פיננסי 
+                  מקצועיים כבר למעלה מ-15 שנה. אנו מאמינים במתן שירות אישי, מקצועי 
+                  ואיכותי לכל לקוח, תוך שמירה על סטנדרטים גבוהים ועמידה בכל דרישות החוק.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
-    </div>
+
+      {/* Calendly Section */}
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-center text-[#2C3E50] mb-8">
+            קביעת פגישת ייעוץ
+          </h2>
+          <CalendlyEmbed />
+        </div>
+      </section>
+
+      {/* <Footer /> */}
+    </main>
   );
-}
-
-const services = [
-  {
-    icon: '/file.svg',
-    title: 'Tax Planning',
-    description: 'Strategic tax planning and preparation services to minimize your tax burden and ensure compliance.'
-  },
-  {
-    icon: '/globe.svg',
-    title: 'Business Consulting',
-    description: 'Expert guidance on financial strategy, growth planning, and business operations.'
-  },
-  {
-    icon: '/window.svg',
-    title: 'Financial Reports',
-    description: 'Comprehensive financial reporting and analysis to drive informed business decisions.'
-  }
-];
-
-const blogPosts = [
-  {
-    title: '2024 Tax Changes You Need to Know',
-    excerpt: 'Stay informed about the latest tax law changes and how they affect your business.',
-    image: '/blog-1.jpg',
-    link: '/blog/2024-tax-changes'
-  },
-  {
-    title: 'Financial Planning for Small Businesses',
-    excerpt: 'Essential financial planning strategies to help your small business succeed.',
-    image: '/blog-2.jpg',
-    link: '/blog/financial-planning'
-  }
-]; 
+} 

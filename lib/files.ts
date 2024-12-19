@@ -1,43 +1,38 @@
-import { connectToDB } from './db';
 import { Document } from './models/Document';
+import { connectToDB } from './db';
 
-export async function getUserFiles(userId: string, month?: string) {
-  await connectToDB();
+export async function getUserFiles(userId: string) {
+  if (!userId) return [];
   
-  const query: any = { userId };
-  
-  if (month) {
-    const startDate = new Date(month);
-    const endDate = new Date(new Date(month).setMonth(startDate.getMonth() + 1));
-    query.uploadedAt = {
-      $gte: startDate,
-      $lt: endDate
-    };
+  try {
+    await connectToDB();
+    const files = await Document.find({
+      $or: [
+        { uploadedBy: userId },
+        { uploadedFor: userId }
+      ]
+    })
+    .sort({ createdAt: -1 })
+    .lean();
+    
+    return files;
+  } catch (error) {
+    console.error('Error fetching user files:', error);
+    return [];
   }
-
-  const files = await Document.find(query)
-    .sort({ uploadedAt: -1 })
-    .limit(10);
-
-  return JSON.parse(JSON.stringify(files));
 }
 
-export async function getAllFiles(month?: string) {
-  await connectToDB();
-  
-  const query: any = {};
-  
-  if (month) {
-    const startDate = new Date(month);
-    const endDate = new Date(new Date(month).setMonth(startDate.getMonth() + 1));
-    query.uploadedAt = {
-      $gte: startDate,
-      $lt: endDate
-    };
+export async function getRecentFiles(limit = 5) {
+  try {
+    await connectToDB();
+    const files = await Document.find()
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .lean();
+    
+    return files;
+  } catch (error) {
+    console.error('Error fetching recent files:', error);
+    return [];
   }
-
-  const files = await Document.find(query)
-    .sort({ uploadedAt: -1 });
-
-  return JSON.parse(JSON.stringify(files));
 } 

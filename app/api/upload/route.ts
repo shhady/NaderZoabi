@@ -1,7 +1,9 @@
-import { NextResponse } from 'next/server';
-import { currentUser } from '@clerk/nextjs/server';
-import { writeFile, mkdir } from 'fs/promises';
-import path from 'path';
+import { NextResponse } from "next/server";
+import { currentUser } from "@clerk/nextjs/server";
+import { connectToDB } from "@/lib/db";
+import { Document } from "@/lib/models/Document";
+import { storage } from "@/lib/firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 export async function POST(req: Request) {
   try {
@@ -11,36 +13,35 @@ export async function POST(req: Request) {
     }
 
     const formData = await req.formData();
-    const file = formData.get('file') as File;
-    
+    const file = formData.get("file") as File;
+    const uploadedFor = formData.get("uploadedFor") as string || user.id;
+
     if (!file) {
-      return new NextResponse("No file uploaded", { status: 400 });
+      return new NextResponse("No file provided", { status: 400 });
     }
 
+    // Convert file to buffer
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Create uploads directory if it doesn't exist
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-    try {
-      await mkdir(uploadDir, { recursive: true });
-    } catch (err) {
-      // Ignore error if directory already exists
-    }
+    // Upload to Firebase Storage
+    const storageRef = ref(storage, `documents/${Date.now()}-${file.name}`);
+    await uploadBytes(storageRef, buffer);
+    const fileUrl = await getDownloadURL(storageRef);
 
-    const fileName = `${Date.now()}-${file.name}`;
-    await writeFile(path.join(uploadDir, fileName), buffer);
-
-    // Save file metadata to database
-    // You can add this part later when you have your database set up
-
-    return NextResponse.json({ 
-      message: 'File uploaded successfully',
-      fileName: fileName,
-      url: `/uploads/${fileName}`
+    // Save to MongoDB
+    await connectToDB();
+    const document = await Document.create({
+      fileName: file.name,
+      fileUrl,
+      fileType: file.type.includes('pdf') ? 'pdf' : 'image',
+      uploadedBy: user.id,
+      uploadedFor: uploadedFor
     });
+
+    return NextResponse.json(document);
   } catch (error) {
-    console.error('Upload error:', error);
+    console.error("Error uploading file:", error);
     return new NextResponse("Error uploading file", { status: 500 });
   }
-} 
+}
