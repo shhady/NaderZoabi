@@ -23,7 +23,7 @@ export default async function BlogPage() {
       {/* Blog Grid */}
       <div className="container mx-auto px-6 py-20">
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {posts.map((post: BlogPost, index: number) => (
+          {posts.map((post: BlogPost) => (
             <article 
               key={post._id}
               className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100"

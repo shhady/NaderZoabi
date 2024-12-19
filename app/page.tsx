@@ -1,4 +1,3 @@
-import { CalendlyEmbed } from "@/components/CalendlyEmbed";
 import Footer from "@/components/Footer";
 
 export default function Home() {
@@ -86,7 +85,6 @@ export default function Home() {
           <h2 className="text-3xl font-bold text-center text-[#2C3E50] mb-8">
             קביעת פגישת ייעוץ
           </h2>
-          <CalendlyEmbed />
         </div>
       </section>
 

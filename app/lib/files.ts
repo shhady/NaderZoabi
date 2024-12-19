@@ -21,3 +21,7 @@ export async function getUserFiles(userId: string, month?: string) {
 
   return JSON.parse(JSON.stringify(files));
 } 
+
+export const uploadFile = async (file: File): Promise<UploadResult> => {
+  // ...
+} 

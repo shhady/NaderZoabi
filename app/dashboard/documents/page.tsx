@@ -14,7 +14,7 @@ interface Document {
 }
 
 export default function DocumentsPage() {
-  const { user } = useUser();
+  const { isLoaded } = useUser();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
 

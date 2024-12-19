@@ -10,7 +10,6 @@ export default function BlogManagementPage() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [category, setCategory] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
 
   if (user?.publicMetadata?.role !== 'admin') {
     return (

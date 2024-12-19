@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { CalendlyEmbed } from '@/components/CalendlyEmbed';
 
 export default function ContactPage() {
   return (
@@ -100,7 +99,6 @@ export default function ContactPage() {
               <h2 className="text-2xl font-semibold text-[#2C3E50] mb-6">
                 קביעת פגישת ייעוץ
               </h2>
-              <CalendlyEmbed />
             </div>
           </div>
         </div>
