@@ -5,26 +5,28 @@ import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
   try {
-    const currentUserData = await currentUser();
-    if (!currentUserData) {
+    const user = await currentUser();
+    if (!user) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const { email, firstName, lastName } = await req.json();
-
+    const { clerkId, email, firstName, lastName,role } = await req.json();
+    console.log(clerkId)
     await connectToDB();
 
-    const existingUser = await User.findOne({ clerkId: currentUserData.id });
+    // Check if user exists
+    const existingUser = await User.findOne({ clerkId });
     if (existingUser) {
       return new NextResponse("User already exists", { status: 400 });
     }
 
+    // Create new user
     const newUser = await User.create({
-      clerkId: currentUserData.id,
+      clerkId,
       email,
       firstName,
       lastName,
-      role: 'user'
+      role: role
     });
 
     return NextResponse.json(newUser);
