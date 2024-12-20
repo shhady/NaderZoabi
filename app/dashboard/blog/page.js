@@ -16,6 +16,7 @@ export default function BlogManagementPage() {
     coverImage: ''
   });
   const [loading, setLoading] = useState(false);
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
   if (user?.publicMetadata?.role !== 'admin') {
     return (
@@ -48,7 +49,7 @@ export default function BlogManagementPage() {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/blog', {
+      const response = await fetch(`${baseUrl}/api/blog`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
