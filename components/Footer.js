@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Footer() {
   return (
     <footer className="bg-[#2C3E50] text-white py-8" dir="rtl">
@@ -22,9 +24,9 @@ export default function Footer() {
           <div>
             <h3 className="text-lg font-semibold mb-4">קישורים מהירים</h3>
             <div className="space-y-2">
-              <p><a href="/services" className="hover:text-[#B78628]">שירותים</a></p>
-              <p><a href="/blog" className="hover:text-[#B78628]">בלוג</a></p>
-              <p><a href="/contact" className="hover:text-[#B78628]">צור קשר</a></p>
+              <p><Link href="/services" className="hover:text-[#B78628]">שירותים</Link></p>
+              <p><Link href="/blog" className="hover:text-[#B78628]">בלוג</Link></p>
+              <p><Link href="/contact" className="hover:text-[#B78628]">צור קשר</Link></p>
             </div>
           </div>
         </div>
