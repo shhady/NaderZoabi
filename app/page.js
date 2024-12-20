@@ -7,11 +7,12 @@ import { CalendlyEmbed } from '../components/CalendlyEmbed';
 import TaxRefundCalculator from '../components/TaxRefundCalculator';
 export default function Home() {
   const [posts, setPosts] = useState([]);
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const response = await fetch('/api/blog');
+        const response = await fetch(`${baseUrl}/api/blog`);
         if (response.ok) {
           const data = await response.json();
           setPosts(data.slice(0, 3)); // Show only 3 blogs on the home page

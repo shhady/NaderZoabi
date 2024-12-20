@@ -7,11 +7,11 @@ import { useState, useEffect } from 'react';
 export default function BlogPage() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
-
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const response = await fetch('/api/blog');
+        const response = await fetch(`${baseUrl}/api/blog`);
         if (response.ok) {
           const data = await response.json();
           setPosts(data);

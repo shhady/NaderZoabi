@@ -9,11 +9,12 @@ export default function BlogPostPage() {
   const { slug } = useParams();
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        const response = await fetch(`/api/blog/${slug}`);
+        const response = await fetch(`${baseUrl}/api/blog/${slug}`);
         if (response.ok) {
           const data = await response.json();
           setPost(data);
