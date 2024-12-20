@@ -1,24 +1,19 @@
 'use client';
 
-import { UserButton, useUser } from '@clerk/nextjs';
+import { useUser } from '@clerk/nextjs';
 
 export default function DashboardHeader() {
-  const { user, isLoaded } = useUser();
-
-  if (!isLoaded) return null;
+  const { user } = useUser();
 
   return (
-    <header className="bg-white border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <div>
-            <h1 className="text-2xl font-semibold text-[#2C3E50]">
-              ברוך הבא, {user?.firstName || 'משתמש'}
-            </h1>
-          </div>
-          {/* <UserButton afterSignOutUrl="/" /> */}
+    <div className="bg-white shadow-sm">
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="py-6 md:py-4 pt-20 md:pt-4">
+          <h1 className="text-xl font-semibold text-[#2C3E50] text-center md:text-right">
+            ברוך הבא, {user?.firstName}
+          </h1>
         </div>
       </div>
-    </header>
+    </div>
   );
 } 

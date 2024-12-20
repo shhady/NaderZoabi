@@ -1,40 +1,48 @@
 import { NextResponse } from "next/server";
 import { currentUser } from "@clerk/nextjs/server";
 import { connectToDB } from "@/lib/db";
-import { Post } from "@/lib/models/Post";
-
-export async function GET() {
-  try {
-    await connectToDB();
-    const posts = await Post.find().sort({ createdAt: -1 }).lean();
-    return NextResponse.json(posts);
-  } catch (error) {
-    console.error("Error fetching posts:", error);
-    return NextResponse.json({ error: "Error fetching posts" }, { status: 500 });
-  }
-}
+import { Blog } from "@/lib/models/Blog";
 
 export async function POST(req) {
   try {
     const user = await currentUser();
-    if (user?.publicMetadata?.role !== 'admin') {
+    if (!user?.publicMetadata?.role === 'admin') {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const data = await req.json();
+    const { title, content, excerpt, coverImage } = await req.json();
+
+    // Create slug from title
+    const slug = title
+      .toLowerCase()
+      .replace(/[^a-zA-Z0-9\s]/g, '')
+      .replace(/\s+/g, '-');
+
     await connectToDB();
 
-    const post = await Post.create({
-      title: data.title,
-      content: data.content,
-      category: data.category,
+    const blog = await Blog.create({
+      title,
+      content,
+      excerpt,
+      slug,
+      coverImage,
       author: user.id,
-      slug: data.title.toLowerCase().replace(/ /g, '-')
     });
 
-    return NextResponse.json(post);
+    return NextResponse.json(blog);
   } catch (error) {
-    console.error("Error creating post:", error);
-    return NextResponse.json({ error: "Error creating post" }, { status: 500 });
+    console.error("Error creating blog:", error);
+    return NextResponse.json({ error: "Error creating blog" }, { status: 500 });
+  }
+}
+
+export async function GET() {
+  try {
+    await connectToDB();
+    const blogs = await Blog.find().sort({ createdAt: -1 });
+    return NextResponse.json(blogs);
+  } catch (error) {
+    console.error("Error fetching blogs:", error);
+    return NextResponse.json({ error: "Error fetching blogs" }, { status: 500 });
   }
 } 

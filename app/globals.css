@@ -4,12 +4,40 @@
 
 :root {
   --foreground-rgb: 0, 0, 0;
-  --background-rgb: 255, 255, 255;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
 }
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: rgb(var(--background-rgb));
+  background: rgb(var(--background-end-rgb));
 }
 
-/* Add any custom styles here */
+/* Blog content styling */
+.blog-content {
+  @apply prose prose-lg max-w-none
+    prose-headings:text-gray-900
+    prose-p:text-gray-700
+    prose-a:text-[#B78628]
+    prose-strong:text-gray-900
+    prose-ul:text-gray-700
+    prose-ol:text-gray-700
+    prose-li:text-gray-700
+    prose-blockquote:text-gray-700
+    prose-hr:border-gray-300
+    prose-img:rounded-lg
+    prose-img:shadow-md;
+}
+
+.blog-content img {
+  @apply my-4 mx-auto;
+}
+
+.blog-content pre {
+  @apply bg-gray-900 text-white p-4 rounded-lg overflow-x-auto;
+}
+
+.blog-content code {
+  @apply bg-gray-100 text-gray-900 px-1 rounded;
+}
+

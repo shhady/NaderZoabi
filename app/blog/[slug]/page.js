@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { formatDate } from '@/lib/utils';
+import MDEditor from '@uiw/react-md-editor';
 
 export default function BlogPostPage() {
   const { slug } = useParams();
@@ -44,7 +45,7 @@ export default function BlogPostPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white py-16">
+    <div className="min-h-screen bg-white py-16" data-color-mode="light">
       <article className="max-w-3xl mx-auto px-4">
         <header className="mb-8">
           <h1 className="text-4xl font-bold text-[#2C3E50] mb-4">
@@ -54,13 +55,11 @@ export default function BlogPostPage() {
             <time dateTime={post.createdAt}>
               {formatDate(post.createdAt)}
             </time>
-            <span className="mx-2">•</span>
-            <span>{post.category}</span>
           </div>
         </header>
 
-        <div className="prose prose-lg max-w-none">
-          {post.content}
+        <div className="prose prose-lg max-w-none blog-content">
+          <MDEditor.Markdown source={post.content} />
         </div>
       </article>
     </div>

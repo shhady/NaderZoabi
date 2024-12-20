@@ -18,6 +18,11 @@ const nextConfig = {
         hostname: 'img.clerk.com',
         pathname: '/**', // Allow all paths under this domain
       },
+      {
+        protocol: 'https',
+        hostname: 'cdn.pixabay.com',
+        pathname: '/**',
+      }
     ],
   },
 };

@@ -1,51 +1,87 @@
 import { NextResponse } from "next/server";
 import { currentUser } from "@clerk/nextjs/server";
 import { connectToDB } from "@/lib/db";
-import { Post } from "@/lib/models/Post";
+import { Blog } from "@/lib/models/Blog";
 
-export async function GET(req) {
+export async function GET(req, { params }) {
   try {
-    const slug = req.url.split('/').pop();
-    if (!slug) {
-      return NextResponse.json({ error: "Invalid slug" }, { status: 400 });
-    }
-
     await connectToDB();
-    const post = await Post.findOne({ slug }).lean();
-
-    if (!post) {
-      return NextResponse.json({ error: "Post not found" }, { status: 404 });
+    const blog = await Blog.findOne({ slug: params.slug });
+    
+    if (!blog) {
+      return NextResponse.json({ error: "Blog not found" }, { status: 404 });
     }
 
-    return NextResponse.json(post);
+    return NextResponse.json(blog);
   } catch (error) {
-    console.error("Error fetching post:", error);
-    return NextResponse.json({ error: "Error fetching post" }, { status: 500 });
+    console.error("Error fetching blog:", error);
+    return NextResponse.json({ error: "Error fetching blog" }, { status: 500 });
   }
 }
 
-export async function DELETE(req) {
+export async function PUT(req, { params }) {
   try {
     const user = await currentUser();
-    if (user?.publicMetadata?.role !== 'admin') {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const slug = req.url.split('/').pop();
-    if (!slug) {
-      return NextResponse.json({ error: "Invalid slug" }, { status: 400 });
+    await connectToDB();
+    const blog = await Blog.findOne({ slug: params.slug });
+    
+    if (!blog) {
+      return NextResponse.json({ error: "Blog not found" }, { status: 404 });
+    }
+
+    // Check if user is the author
+    if (blog.author !== user.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { title, content, excerpt, coverImage } = await req.json();
+    
+    const updatedBlog = await Blog.findOneAndUpdate(
+      { slug: params.slug },
+      {
+        title,
+        content,
+        excerpt,
+        coverImage,
+        updatedAt: Date.now(),
+      },
+      { new: true }
+    );
+
+    return NextResponse.json(updatedBlog);
+  } catch (error) {
+    console.error("Error updating blog:", error);
+    return NextResponse.json({ error: "Error updating blog" }, { status: 500 });
+  }
+}
+
+export async function DELETE(req, { params }) {
+  try {
+    const user = await currentUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     await connectToDB();
-    const post = await Post.findOneAndDelete({ slug });
-
-    if (!post) {
-      return NextResponse.json({ error: "Post not found" }, { status: 404 });
+    const blog = await Blog.findOne({ slug: params.slug });
+    
+    if (!blog) {
+      return NextResponse.json({ error: "Blog not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ message: "Post deleted successfully" });
+    // Check if user is the author
+    if (blog.author !== user.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    await Blog.deleteOne({ slug: params.slug });
+    return NextResponse.json({ message: "Blog deleted successfully" });
   } catch (error) {
-    console.error("Error deleting post:", error);
-    return NextResponse.json({ error: "Error deleting post" }, { status: 500 });
+    console.error("Error deleting blog:", error);
+    return NextResponse.json({ error: "Error deleting blog" }, { status: 500 });
   }
 } 
