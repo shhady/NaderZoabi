@@ -7,12 +7,11 @@ import { CalendlyEmbed } from '../components/CalendlyEmbed';
 import TaxRefundCalculator from '../components/TaxRefundCalculator';
 export default function Home() {
   const [posts, setPosts] = useState([]);
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-
+ console.log(posts)
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const response = await fetch(`${baseUrl}/api/blog`);
+        const response = await fetch(`/api/blog`);
         if (response.ok) {
           const data = await response.json();
           setPosts(data.slice(0, 3)); // Show only 3 blogs on the home page
@@ -84,7 +83,7 @@ export default function Home() {
           </h2>
           <div className="grid md:grid-cols-2 gap-12">
             {accountants.map((accountant, index) => (
-              <div key={index} className="flex items-center space-x-6 bg-gray-50 p-6 rounded-lg shadow">
+              <div key={index} className="flex items-center space-x-6 bg-[#f0f0f0] p-6 rounded-lg shadow">
                 <Image
                   src={'/user-avatar.png'}
                   alt={accountant.name}
@@ -123,21 +122,59 @@ export default function Home() {
 <TaxRefundCalculator />
       {/* Blog Section */}
       <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="container mx-auto px-6">
           <h2 className="text-3xl font-bold text-center text-[#2C3E50] mb-12">
-            מהבלוג שלנו
+            הבלוג שלנו
           </h2>
           <div className="grid md:grid-cols-3 gap-8">
-            {posts.map((post) => (
-              <article key={post._id} className="bg-gray-50 p-6 rounded-lg shadow">
-                <Image src={post.coverImage} alt={post.title} width={300} height={200} />
-                <h3 className="text-xl font-semibold text-[#2C3E50] mb-3">{post.title}</h3>
-                <p className="text-gray-600 mb-3">{post.excerpt}</p>
-                <Link href={`/blog/${post.slug}`} className="text-[#B78628] hover:text-[#96691E] font-medium">
-                  קרא עוד →
-                </Link>
+            {posts.slice(0, 3).map((post) => (
+              <article 
+                key={post._id}
+                className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100"
+              >
+                {post.coverImage && (
+                  <div className="relative h-48">
+                    <Image
+                      src={post.coverImage}
+                      alt={post.title}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                )}
+                <div className="p-6">
+                  <div className="flex items-center mb-4">
+                    <time className="text-sm text-gray-500" suppressHydrationWarning>
+                      {new Date(post.createdAt).toLocaleDateString('he-IL')}
+                    </time>
+                    <span className="mx-2 text-gray-300">•</span>
+                    <span className="text-sm text-[#B78628]">{post.category}</span>
+                  </div>
+                  <h2 className="text-xl font-semibold text-[#2C3E50] mb-3">
+                    {post.title}
+                  </h2>
+                  <p className="text-gray-600 mb-4">
+                    {post.excerpt}
+                  </p>
+                  {post._id && (
+                    <Link
+                      href={`/blog/${post._id}`}
+                      className="text-[#B78628] hover:text-[#96691E] font-medium"
+                    >
+                      קרא עוד →
+                    </Link>
+                  )}
+                </div>
               </article>
             ))}
+          </div>
+          <div className="text-center mt-8">
+            <Link 
+              href="/blog"
+              className="inline-block px-6 py-3 bg-[#B78628] text-white rounded-md hover:bg-[#96691E] transition-colors"
+            >
+              כל הבלוגים
+            </Link>
           </div>
         </div>
       </section>

@@ -6,15 +6,15 @@ import { formatDate } from '@/lib/utils';
 import MDEditor from '@uiw/react-md-editor';
 
 export default function BlogPostPage() {
-  const { slug } = useParams();
+  const { id } = useParams();
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
+  console.log(post)
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        const response = await fetch(`${baseUrl}/api/blog/${slug}`);
+        const response = await fetch(`/api/blog/${id}`);
         if (response.ok) {
           const data = await response.json();
           setPost(data);
@@ -27,8 +27,7 @@ export default function BlogPostPage() {
     };
 
     fetchPost();
-  }, [slug, baseUrl]);
-
+  }, [id]);
   if (loading) {
     return (
       <div className="text-center py-10">
@@ -44,7 +43,6 @@ export default function BlogPostPage() {
       </div>
     );
   }
-
   return (
     <div className="min-h-screen bg-white py-16" data-color-mode="light">
       <article className="max-w-3xl mx-auto px-4">
@@ -65,4 +63,5 @@ export default function BlogPostPage() {
       </article>
     </div>
   );
+  // ... rest of the component stays the same
 } 

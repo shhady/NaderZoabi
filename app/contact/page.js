@@ -13,7 +13,7 @@ const Map = dynamic(() => import('./Map'), {
 export default function ContactPage() {
   const testimonials = [
     {
-      name: 'אחמד כהן',
+      name: 'יוסי כהן',
       feedback:
         'שירות מצוין ומקצועי. זועבי נאדר עזר לי להבין את המצב הפיננסי שלי ולתכנן את המסים בצורה יעילה.',
     },

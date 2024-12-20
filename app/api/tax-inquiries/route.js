@@ -1,5 +1,5 @@
 import { connectToDB } from '@/lib/db';
-import { TaxInquiry } from '@/lib/models/taxInquiry';
+import { TaxInquiry } from '@/lib/models/TaxInquiry';
 import { NextResponse } from 'next/server';
 
 export async function POST(req) {
@@ -54,27 +54,35 @@ export async function POST(req) {
 
 export async function GET(req) {
   try {
-    await connectToDB();
-    
     const { searchParams } = new URL(req.url);
     const month = searchParams.get('month');
+    const year = searchParams.get('year');
+    const status = searchParams.get('status');
+
+    await connectToDB();
 
     let query = {};
-    if (month) {
-      const startDate = new Date(new Date().getFullYear(), month - 1, 1);
-      const endDate = new Date(new Date().getFullYear(), month, 0);
+
+    // Add filters to query if they exist
+    if (month || year) {
+      const startDate = new Date(year || '2024', month ? month - 1 : 0, 1);
+      const endDate = new Date(year || '2024', month ? month : 12, 0);
       query.createdAt = {
         $gte: startDate,
         $lte: endDate
       };
     }
 
+    if (status) {
+      query.status = status;
+    }
+
     const inquiries = await TaxInquiry.find(query).sort({ createdAt: -1 });
     return NextResponse.json(inquiries);
   } catch (error) {
-    console.error('Error fetching tax inquiries:', error);
+    console.error('Error fetching inquiries:', error);
     return NextResponse.json(
-      { error: 'Error fetching tax inquiries' },
+      { error: 'Error fetching inquiries' },
       { status: 500 }
     );
   }

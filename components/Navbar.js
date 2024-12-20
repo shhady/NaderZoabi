@@ -8,15 +8,15 @@ import { usePathname } from 'next/navigation';
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
   const isAdmin = user?.publicMetadata?.role === 'admin';
   const pathname = usePathname();
 
   const navLinks = [
-    { href: '/', label: 'בית' },
-    { href: '/services', label: 'שירותים' },
-    { href: '/blog', label: 'בלוג' },
     { href: '/contact', label: 'צור קשר' },
+    { href: '/blog', label: 'בלוג' },
+    { href: '/services', label: 'שירותים' },
+    { href: '/', label: 'בית' },
   ];
 
   const isActivePath = (path) => {
@@ -25,7 +25,7 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="bg-white shadow-md fixed top-0 left-0 right-0 z-50" dir='ltr'>
+    <nav className="bg-white shadow-md fixed top-0 left-0 right-0 z-50" dir="ltr">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between h-16 items-center">
           <div className="flex items-center order-2 md:order-1">
@@ -40,7 +40,7 @@ export default function Navbar() {
             </Link>
           </div>
 
-          <div className="hidden md:flex items-center rtl:space-x-reverse order-1 md:order-2 gap-2">
+          <div className="hidden md:flex items-center space-x-reverse order-1 md:order-2 gap-2">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -56,17 +56,38 @@ export default function Navbar() {
             ))}
           </div>
 
-          <div className="flex items-center space-x-4 order-3">
-            {isAdmin ? (
-              <Link href="/dashboard" className="text-gray-600 hover:text-[#B78628]">
-                לוח בקרה
-              </Link>
-            ) : user ? (
-              <Link href="/dashboard" className="text-gray-600 hover:text-[#B78628]">
-                אזור אישי
-              </Link>
+          <div className="flex items-center space-x-4 space-x-reverse order-3 gap-2">
+            {isLoaded ? (
+              user ? (
+                <>
+                  {isAdmin ? (
+                    <Link href="/dashboard" className="text-gray-600 hover:text-[#B78628]">
+                      לוח בקרה
+                    </Link>
+                  ) : (
+                    <Link href="/dashboard" className="text-gray-600 hover:text-[#B78628]">
+                      אזור אישי
+                    </Link>
+                  )}
+                  <UserButton afterSignOutUrl="/" />
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/sign-up"
+                    className="bg-[#B78628] text-white px-4 py-2 rounded-md hover:bg-[#96691E] transition-colors"
+                  >
+                    הירשם
+                  </Link>
+                  <Link
+                    href="/sign-in"
+                    className="text-gray-600 hover:text-[#B78628]"
+                  >
+                    התחבר
+                  </Link>
+                </>
+              )
             ) : null}
-            <UserButton afterSignOutUrl="/" />
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="md:hidden text-gray-600 hover:text-[#B78628] focus:outline-none"
@@ -107,10 +128,28 @@ export default function Navbar() {
                   {link.label}
                 </Link>
               ))}
+              {!user && (
+                <>
+                  <Link
+                    href="/sign-in"
+                    className="text-gray-600 hover:text-[#B78628] px-3 py-2"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    התחבר
+                  </Link>
+                  <Link
+                    href="/sign-up"
+                    className="bg-[#B78628] text-white px-4 py-2 rounded-md hover:bg-[#96691E] transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    הירשם
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         )}
       </div>
     </nav>
   );
-} 
+}

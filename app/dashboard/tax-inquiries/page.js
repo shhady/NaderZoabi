@@ -1,18 +1,18 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
-import ErrorBoundary from '@/components/ErrorBoundary';
 
 export default function TaxInquiriesPage() {
+  const currentYear = new Date().getFullYear();
   const [inquiries, setInquiries] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState('');
+  const [selectedYear, setSelectedYear] = useState(currentYear.toString());
+  const [selectedStatus, setSelectedStatus] = useState('');
   const [loading, setLoading] = useState(true);
-  const [selectedInquiry, setSelectedInquiry] = useState(null);
   const { user } = useUser();
   const router = useRouter();
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
   useEffect(() => {
     if (user?.publicMetadata?.role !== 'admin') {
@@ -21,53 +21,65 @@ export default function TaxInquiriesPage() {
     }
 
     fetchInquiries();
-  }, [user, router, selectedMonth, fetchInquiries]);
+  }, [user, router, selectedMonth, selectedYear, selectedStatus]);
 
-  const fetchWithTimeout = async (url, options = {}, timeout = 30000) => {
-    const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), timeout);
-
+  const fetchInquiries = async () => {
     try {
-      const response = await fetch(url, {
-        ...options,
-        signal: controller.signal,
-      });
-      clearTimeout(id);
-      return response;
-    } catch (error) {
-      clearTimeout(id);
-      throw error;
-    }
-  };
+      let url = '/api/tax-inquiries';
+      const params = new URLSearchParams();
 
-  const fetchInquiries = useCallback(async () => {
-    try {
-      let url = `${baseUrl}/api/tax-inquiries`;
-      if (selectedMonth) {
-        url += `?month=${selectedMonth}`;
+      if (selectedMonth) params.append('month', selectedMonth);
+      if (selectedYear) params.append('year', selectedYear);
+      if (selectedStatus) params.append('status', selectedStatus);
+
+      if ([...params].length > 0) {
+        url += `?${params.toString()}`;
       }
-      const response = await fetchWithTimeout(url);
+
+      const response = await fetch(url);
       if (response.ok) {
         const data = await response.json();
         setInquiries(data);
-      } else {
-        throw new Error(`HTTP error! status: ${response.status}`);
       }
     } catch (error) {
       console.error('Error fetching inquiries:', error);
-      if (error.name === 'AbortError') {
-        alert('בקשה נכשלה עקב timeout. אנא נסה שוב.');
-      } else {
-        alert('אירעה שגיאה בטעינת הנתונים. אנא נסה שוב.');
-      }
     } finally {
       setLoading(false);
     }
-  }, [selectedMonth, baseUrl]);
+  };
+
+  const months = [
+    { value: '1', label: 'ינואר' },
+    { value: '2', label: 'פברואר' },
+    { value: '3', label: 'מרץ' },
+    { value: '4', label: 'אפריל' },
+    { value: '5', label: 'מאי' },
+    { value: '6', label: 'יוני' },
+    { value: '7', label: 'יולי' },
+    { value: '8', label: 'אוגוסט' },
+    { value: '9', label: 'ספטמבר' },
+    { value: '10', label: 'אוקטובר' },
+    { value: '11', label: 'נובמבר' },
+    { value: '12', label: 'דצמבר' },
+  ];
+
+  const years = Array.from(
+    { length: (currentYear + 1) - 2024 + 1 },
+    (_, i) => ({ 
+      value: (2024 + i).toString(), 
+      label: (2024 + i).toString() 
+    })
+  );
+
+  const statusOptions = [
+    { value: 'pending', label: 'ממתין' },
+    { value: 'in-progress', label: 'בטיפול' },
+    { value: 'completed', label: 'הושלם' }
+  ];
 
   const updateInquiryStatus = async (id, status) => {
     try {
-      const response = await fetch(`${baseUrl}/api/tax-inquiries/${id}`, {
+      const response = await fetch(`/api/tax-inquiries/${id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -76,36 +88,10 @@ export default function TaxInquiriesPage() {
       });
 
       if (response.ok) {
-        const updatedInquiry = await response.json();
-        if (selectedInquiry?._id === id) {
-          setSelectedInquiry(updatedInquiry);
-        }
-        setInquiries(prev => 
-          prev.map(inquiry => 
-            inquiry._id === id ? updatedInquiry : inquiry
-          )
-        );
+        fetchInquiries();
       }
     } catch (error) {
       console.error('Error updating inquiry:', error);
-    }
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'pending': return 'text-yellow-600';
-      case 'in-progress': return 'text-blue-600';
-      case 'completed': return 'text-green-600';
-      default: return 'text-gray-600';
-    }
-  };
-
-  const getStatusText = (status) => {
-    switch (status) {
-      case 'pending': return 'ממתין';
-      case 'in-progress': return 'בטיפול';
-      case 'completed': return 'הושלם';
-      default: return status;
     }
   };
 
@@ -113,99 +99,123 @@ export default function TaxInquiriesPage() {
     return <div className="text-center py-10">טוען...</div>;
   }
 
-  if (selectedInquiry) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-semibold text-[#2C3E50]">פרטי הפנייה</h2>
-          <button
-            onClick={() => setSelectedInquiry(null)}
-            className="text-gray-600 hover:text-[#B78628]"
-          >
-            חזור לרשימה
-          </button>
-        </div>
+  return (
+    <div className="space-y-6">
+      <h1 className="text-2xl font-semibold text-[#2C3E50]">ניהול פניות להחזרי מס</h1>
 
-        <div className="bg-white rounded-lg shadow p-6 space-y-4">
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <h3 className="font-semibold mb-3">פרטי קשר</h3>
-              <p className="mb-2 break-words">
-                <span className="font-medium">שם:</span> {selectedInquiry.contactName}
-              </p>
-              <p className="mb-2">
-                <span className="font-medium">טלפון:</span> {selectedInquiry.contactPhone}
-              </p>
-              <p className="mb-2 break-words">
-                <span className="font-medium">אימייל:</span> {selectedInquiry.contactEmail}
-              </p>
-            </div>
-            <div>
-              <h3 className="font-semibold">פרטי הכנסה</h3>
-              <p>הכנסה שנתית: ₪{selectedInquiry.annualIncome}</p>
-              <p>חודשי עבודה: {selectedInquiry.monthsWorked}</p>
-              <p>הפרשות לפנסיה: ₪{selectedInquiry.pensionContributions}</p>
-            </div>
+      <div className="bg-white rounded-lg shadow p-4 md:p-6">
+        <div className="grid md:grid-cols-3 gap-4 mb-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              סנן לפי חודש
+            </label>
+            <select
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+              className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-[#B78628]"
+            >
+              <option value="">כל החודשים</option>
+              {months.map((month) => (
+                <option key={month.value} value={month.value}>
+                  {month.label}
+                </option>
+              ))}
+            </select>
           </div>
 
-          <div className="mt-4">
-            <h3 className="font-semibold">סטטוס</h3>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              סנן לפי שנה
+            </label>
             <select
-              value={selectedInquiry.status}
-              onChange={(e) => updateInquiryStatus(selectedInquiry._id, e.target.value)}
-              className="mt-1 px-2 py-1 border rounded-md focus:ring-2 focus:ring-[#B78628]"
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(e.target.value)}
+              className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-[#B78628]"
             >
-              <option value="pending">ממתין</option>
-              <option value="in-progress">בטיפול</option>
-              <option value="completed">הושלם</option>
+              <option value="">כל השנים</option>
+              {years.map((year) => (
+                <option key={year.value} value={year.value}>
+                  {year.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              סנן לפי סטטוס
+            </label>
+            <select
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+              className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-[#B78628]"
+            >
+              <option value="">כל הסטטוסים</option>
+              {statusOptions.map((status) => (
+                <option key={status.value} value={status.value}>
+                  {status.label}
+                </option>
+              ))}
             </select>
           </div>
         </div>
-      </div>
-    );
-  }
 
-  return (
-    <ErrorBoundary>
-      <div className="space-y-6">
-        <h1 className="text-2xl font-semibold text-[#2C3E50]">ניהול פניות להחזרי מס</h1>
-
-        <div className="bg-white rounded-lg shadow overflow-x-auto">
+        <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 w-1/2">שם</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 w-1/4">סטטוס</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 w-1/4">פעולות</th>
+                <th className="px-3 md:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  שם
+                </th>
+                <th className="pl-3 md:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  סטטוס
+                </th>
+                <th className="px-3 md:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  פעולות
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {inquiries.map((inquiry) => (
-                <tr key={inquiry._id}>
-                  <td className="px-4 py-3">
-                    <div className="text-sm leading-5 text-gray-900 break-words">
-                      {inquiry.contactName}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`${getStatusColor(inquiry.status)} text-sm`}>
-                      {getStatusText(inquiry.status)}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <button
-                      onClick={() => setSelectedInquiry(inquiry)}
-                      className="text-[#B78628] hover:text-[#96691E] text-sm"
-                    >
-                      צפה בפרטים
-                    </button>
+              {inquiries.length === 0 ? (
+                <tr>
+                  <td colSpan="3" className="px-6 py-4 text-center text-gray-500">
+                    לא נמצאו פניות
                   </td>
                 </tr>
-              ))}
+              ) : (
+                inquiries.map((inquiry) => (
+                  <tr key={inquiry._id}>
+                    <td className="px-3 md:px-6 py-4">
+                      <div className="text-sm text-gray-900 break-words leading-5">
+                        {inquiry.contactName}
+                      </div>
+                    </td>
+                    <td className="pl-3 md:px-6 py-4">
+                      <select
+                        value={inquiry.status}
+                        onChange={(e) => updateInquiryStatus(inquiry._id, e.target.value)}
+                        className="w-full md:w-auto px-2 py-1 text-sm border rounded-md focus:ring-2 focus:ring-[#B78628]"
+                      >
+                        <option value="pending">ממתין</option>
+                        <option value="in-progress">בטיפול</option>
+                        <option value="completed">הושלם</option>
+                      </select>
+                    </td>
+                    <td className="px-3 md:px-6 py-4">
+                      <button
+                        onClick={() => router.push(`/dashboard/tax-inquiries/${inquiry._id}`)}
+                        className="text-[#B78628] hover:text-[#96691E] text-sm"
+                      >
+                        צפה בפרטים
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
       </div>
-    </ErrorBoundary>
+    </div>
   );
-} 
+}

@@ -1,12 +1,22 @@
 import { connectToDB } from '@/lib/db';
-import { BlogPost } from '@/lib/models/Blog';
+import { Blog } from '@/lib/models/Blog';
 import { NextResponse } from 'next/server';
+import mongoose from 'mongoose';
 
 export async function GET(request, { params }) {
   try {
     await connectToDB();
-    const { slug } = params;
-    const post = await BlogPost.findOne({ slug });
+    const { id } = params;
+
+    // Validate MongoDB ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { error: 'Invalid ID format' },
+        { status: 400 }
+      );
+    }
+
+    const post = await Blog.findById(id);
 
     if (!post) {
       return NextResponse.json(
@@ -32,22 +42,28 @@ export async function PUT(req, { params }) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    if (!mongoose.Types.ObjectId.isValid(params.id)) {
+      return NextResponse.json(
+        { error: 'Invalid ID format' },
+        { status: 400 }
+      );
+    }
+
     await connectToDB();
-    const blog = await Blog.findOne({ slug: params.slug });
+    const blog = await Blog.findById(params.id);
     
     if (!blog) {
       return NextResponse.json({ error: "Blog not found" }, { status: 404 });
     }
 
-    // Check if user is the author
     if (blog.author !== user.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { title, content, excerpt, coverImage } = await req.json();
     
-    const updatedBlog = await Blog.findOneAndUpdate(
-      { slug: params.slug },
+    const updatedBlog = await Blog.findByIdAndUpdate(
+      params.id,
       {
         title,
         content,
@@ -72,19 +88,25 @@ export async function DELETE(req, { params }) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    if (!mongoose.Types.ObjectId.isValid(params.id)) {
+      return NextResponse.json(
+        { error: 'Invalid ID format' },
+        { status: 400 }
+      );
+    }
+
     await connectToDB();
-    const blog = await Blog.findOne({ slug: params.slug });
+    const blog = await Blog.findById(params.id);
     
     if (!blog) {
       return NextResponse.json({ error: "Blog not found" }, { status: 404 });
     }
 
-    // Check if user is the author
     if (blog.author !== user.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    await Blog.deleteOne({ slug: params.slug });
+    await Blog.findByIdAndDelete(params.id);
     return NextResponse.json({ message: "Blog deleted successfully" });
   } catch (error) {
     console.error("Error deleting blog:", error);

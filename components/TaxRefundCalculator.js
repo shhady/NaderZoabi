@@ -364,17 +364,23 @@ export default function TaxRefundCalculator() {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form 
+          onSubmit={handleSubmit} 
+          className="space-y-6"
+          suppressHydrationWarning
+        >
           {currentStep === STEPS.INCOME && renderIncomeStep()}
           {currentStep === STEPS.PERSONAL && renderPersonalStep()}
           {currentStep === STEPS.DEDUCTIONS && renderDeductionsStep()}
           {currentStep === STEPS.CONTACT && renderContactStep()}
+
           <div className="flex justify-between mt-8">
             {currentStep > STEPS.INCOME && (
               <button
                 type="button"
                 onClick={prevStep}
                 className="px-6 py-2 border border-[#B78628] text-[#B78628] rounded-md hover:bg-gray-50 transition-colors"
+                suppressHydrationWarning
               >
                 חזור
               </button>
@@ -382,6 +388,7 @@ export default function TaxRefundCalculator() {
             <button
               type="submit"
               className="px-6 py-2 bg-[#B78628] text-white rounded-md hover:bg-[#96691E] transition-colors"
+              suppressHydrationWarning
             >
               {currentStep === STEPS.CONTACT ? 'שלח' : 'המשך'}
             </button>
