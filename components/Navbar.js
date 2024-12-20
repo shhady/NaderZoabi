@@ -4,11 +4,25 @@ import Link from 'next/link';
 import { UserButton, useUser } from '@clerk/nextjs';
 import { useState } from 'react';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user } = useUser();
   const isAdmin = user?.publicMetadata?.role === 'admin';
+  const pathname = usePathname();
+
+  const navLinks = [
+    { href: '/', label: 'בית' },
+    { href: '/services', label: 'שירותים' },
+    { href: '/blog', label: 'בלוג' },
+    { href: '/contact', label: 'צור קשר' },
+  ];
+
+  const isActivePath = (path) => {
+    if (path === '/' && pathname !== '/') return false;
+    return pathname.startsWith(path);
+  };
 
   return (
     <nav className="bg-white shadow-md fixed top-0 left-0 right-0 z-50" dir='ltr'>
@@ -26,18 +40,20 @@ export default function Navbar() {
             </Link>
           </div>
 
-          <div className="hidden md:flex items-center  rtl:space-x-reverse order-1 md:order-2 gap-2">
-            
-           
-            <Link href="/contact" className="text-gray-600 hover:text-[#B78628]">
-              צור קשר
-            </Link>
-            <Link href="/blog" className="text-gray-600 hover:text-[#B78628]">
-              בלוג
-            </Link>
-            <Link href="/services" className="text-gray-600 hover:text-[#B78628]">
-              שירותים
-            </Link>
+          <div className="hidden md:flex items-center rtl:space-x-reverse order-1 md:order-2 gap-2">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`px-3 py-2 rounded-md text-base transition-colors ${
+                  isActivePath(link.href)
+                    ? 'text-[#B78628] border-b-2 border-[#B78628]'
+                    : 'text-gray-600 hover:text-[#B78628]'
+                }`}
+              >
+                {link.label}
+              </Link>
+            ))}
           </div>
 
           <div className="flex items-center space-x-4 order-3">
@@ -76,29 +92,21 @@ export default function Navbar() {
 
         {isMenuOpen && (
           <div className="md:hidden pb-4">
-            <div className="flex flex-col space-y-2  justify-center items-center">
-            <Link
-                href="/contact"
-                className="text-gray-600 hover:text-[#B78628] px-3 py-2 rounded-md text-base"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                צור קשר
-              </Link>
-             
-              <Link
-                href="/blog"
-                className="text-gray-600 hover:text-[#B78628] px-3 py-2 rounded-md text-base"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                בלוג
-              </Link>
-              <Link
-                href="/services"
-                className="text-gray-600 hover:text-[#B78628] px-3 py-2 rounded-md text-base"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                שירותים
-              </Link>
+            <div className="flex flex-col space-y-2 justify-center items-center">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`px-3 py-2 rounded-md text-base ${
+                    isActivePath(link.href)
+                      ? 'text-[#B78628] border-b border-[#B78628]'
+                      : 'text-gray-600 hover:text-[#B78628]'
+                  }`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {link.label}
+                </Link>
+              ))}
             </div>
           </div>
         )}
