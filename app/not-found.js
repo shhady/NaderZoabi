@@ -1,15 +1,17 @@
+import Link from 'next/link';
+
 export default function NotFound() {
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="text-center">
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">404 - הדף לא נמצא</h2>
-        <p className="text-gray-600 mb-4">הדף שחיפשת אינו קיים</p>
-        <a
-          href="/"
-          className="bg-[#B78628] text-white px-4 py-2 rounded hover:bg-[#96691E]"
+        <h1 className="text-4xl font-bold text-[#2C3E50] mb-4">404 - דף לא נמצא</h1>
+        <p className="text-gray-600 mb-8">הדף שחיפשת אינו קיים</p>
+        <Link 
+          href="/" 
+          className="text-[#B78628] hover:text-[#96691E] font-medium"
         >
           חזור לדף הבית
-        </a>
+        </Link>
       </div>
     </div>
   );

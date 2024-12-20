@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 
@@ -19,9 +19,9 @@ export default function TaxInquiriesPage() {
     }
 
     fetchInquiries();
-  }, [user, router, selectedMonth]);
+  }, [user, router, selectedMonth, fetchInquiries]);
 
-  const fetchInquiries = async () => {
+  const fetchInquiries = useCallback(async () => {
     try {
       let url = '/api/tax-inquiries';
       if (selectedMonth) {
@@ -37,7 +37,7 @@ export default function TaxInquiriesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedMonth]);
 
   const updateInquiryStatus = async (id, status) => {
     try {
