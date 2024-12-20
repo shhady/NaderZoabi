@@ -1,21 +1,27 @@
-import { NextResponse } from "next/server";
-import { currentUser } from "@clerk/nextjs/server";
-import { connectToDB } from "@/lib/db";
-import { Blog } from "@/lib/models/Blog";
+import { connectToDB } from '@/lib/db';
+import { BlogPost } from '@/lib/models/BlogPost';
+import { NextResponse } from 'next/server';
 
-export async function GET(req, { params }) {
+export async function GET(request, { params }) {
   try {
     await connectToDB();
-    const blog = await Blog.findOne({ slug: params.slug });
-    
-    if (!blog) {
-      return NextResponse.json({ error: "Blog not found" }, { status: 404 });
+    const { slug } = params;
+    const post = await BlogPost.findOne({ slug });
+
+    if (!post) {
+      return NextResponse.json(
+        { error: 'Post not found' },
+        { status: 404 }
+      );
     }
 
-    return NextResponse.json(blog);
+    return NextResponse.json(post);
   } catch (error) {
-    console.error("Error fetching blog:", error);
-    return NextResponse.json({ error: "Error fetching blog" }, { status: 500 });
+    console.error('Error fetching post:', error);
+    return NextResponse.json(
+      { error: 'Error fetching post' },
+      { status: 500 }
+    );
   }
 }
 
