@@ -25,9 +25,9 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="bg-white shadow-md fixed top-0 left-0 right-0 z-50" dir="ltr">
+    <nav className="bg-white shadow-md fixed top-0 left-0 right-0 z-50" >
       <div className="max-w-7xl mx-auto px-4">
-        <div className="flex justify-between h-16 items-center">
+        <div className="flex justify-between h-16 items-center" dir="ltr">
           <div className="flex items-center order-2 md:order-1">
             <Link href="/" className="text-2xl font-bold text-[#2C3E50]">
               <Image 
@@ -75,13 +75,13 @@ export default function Navbar() {
                 <>
                   <Link
                     href="/sign-up"
-                    className="bg-[#B78628] text-white px-4 py-2 rounded-md hover:bg-[#96691E] transition-colors"
+                    className="bg-[#B78628] text-white px-4 py-2 rounded-md hover:bg-[#96691E] transition-colors hidden md:block"
                   >
                     הירשם
                   </Link>
                   <Link
                     href="/sign-in"
-                    className="text-gray-600 hover:text-[#B78628]"
+                    className="text-gray-600 hover:text-[#B78628] hidden md:block"
                   >
                     התחבר
                   </Link>
@@ -112,23 +112,9 @@ export default function Navbar() {
         </div>
 
         {isMenuOpen && (
-          <div className="md:hidden pb-4">
-            <div className="flex flex-col space-y-2 justify-center items-center">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`px-3 py-2 rounded-md text-base ${
-                    isActivePath(link.href)
-                      ? 'text-[#B78628] border-b border-[#B78628]'
-                      : 'text-gray-600 hover:text-[#B78628]'
-                  }`}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {link.label}
-                </Link>
-              ))}
-              {!user && (
+          <div className="md:hidden pb-4" >
+            <div className="flex space-y-2 justify-center items-center flex-col-reverse">
+            {!user && (
                 <>
                   <Link
                     href="/sign-in"
@@ -146,6 +132,21 @@ export default function Navbar() {
                   </Link>
                 </>
               )}
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`px-3 py-2 rounded-md text-base ${
+                    isActivePath(link.href)
+                      ? 'text-[#B78628] border-b border-[#B78628]'
+                      : 'text-gray-600 hover:text-[#B78628]'
+                  }`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {link.label}
+                </Link>
+              ))}
+              
             </div>
           </div>
         )}
