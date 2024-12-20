@@ -172,7 +172,7 @@ export default function ContactPage() {
                   key={index}
                   className="bg-white p-6 rounded-lg shadow-md"
                 >
-                  <p className="italic text-gray-600">"{testimonial.feedback}"</p>
+                  <p className="italic text-gray-600">&quot;{testimonial.feedback}&quot;</p>
                   <p className="mt-4 text-sm font-semibold text-[#2C3E50]">
                     - {testimonial.name}
                   </p>
