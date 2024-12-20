@@ -45,6 +45,8 @@ export default function TaxRefundCalculator() {
     contactPhone: '',
   });
 
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
@@ -69,7 +71,7 @@ export default function TaxRefundCalculator() {
     }
 
     try {
-      const response = await fetch('/api/tax-inquiries', {
+      const response = await fetch(`${baseUrl}/api/tax-inquiries`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

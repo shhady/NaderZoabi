@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 export default function TaxInquiriesPage() {
   const [inquiries, setInquiries] = useState([]);
@@ -11,6 +12,7 @@ export default function TaxInquiriesPage() {
   const [selectedInquiry, setSelectedInquiry] = useState(null);
   const { user } = useUser();
   const router = useRouter();
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
   useEffect(() => {
     if (user?.publicMetadata?.role !== 'admin') {
@@ -21,27 +23,51 @@ export default function TaxInquiriesPage() {
     fetchInquiries();
   }, [user, router, selectedMonth, fetchInquiries]);
 
+  const fetchWithTimeout = async (url, options = {}, timeout = 30000) => {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeout);
+
+    try {
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal,
+      });
+      clearTimeout(id);
+      return response;
+    } catch (error) {
+      clearTimeout(id);
+      throw error;
+    }
+  };
+
   const fetchInquiries = useCallback(async () => {
     try {
-      let url = '/api/tax-inquiries';
+      let url = `${baseUrl}/api/tax-inquiries`;
       if (selectedMonth) {
         url += `?month=${selectedMonth}`;
       }
-      const response = await fetch(url);
+      const response = await fetchWithTimeout(url);
       if (response.ok) {
         const data = await response.json();
         setInquiries(data);
+      } else {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
     } catch (error) {
       console.error('Error fetching inquiries:', error);
+      if (error.name === 'AbortError') {
+        alert('בקשה נכשלה עקב timeout. אנא נסה שוב.');
+      } else {
+        alert('אירעה שגיאה בטעינת הנתונים. אנא נסה שוב.');
+      }
     } finally {
       setLoading(false);
     }
-  }, [selectedMonth]);
+  }, [selectedMonth, baseUrl]);
 
   const updateInquiryStatus = async (id, status) => {
     try {
-      const response = await fetch(`/api/tax-inquiries/${id}`, {
+      const response = await fetch(`${baseUrl}/api/tax-inquiries/${id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -140,44 +166,46 @@ export default function TaxInquiriesPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-semibold text-[#2C3E50]">ניהול פניות להחזרי מס</h1>
+    <ErrorBoundary>
+      <div className="space-y-6">
+        <h1 className="text-2xl font-semibold text-[#2C3E50]">ניהול פניות להחזרי מס</h1>
 
-      <div className="bg-white rounded-lg shadow overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 w-1/2">שם</th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 w-1/4">סטטוס</th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 w-1/4">פעולות</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {inquiries.map((inquiry) => (
-              <tr key={inquiry._id}>
-                <td className="px-4 py-3">
-                  <div className="text-sm leading-5 text-gray-900 break-words">
-                    {inquiry.contactName}
-                  </div>
-                </td>
-                <td className="px-4 py-3">
-                  <span className={`${getStatusColor(inquiry.status)} text-sm`}>
-                    {getStatusText(inquiry.status)}
-                  </span>
-                </td>
-                <td className="px-4 py-3">
-                  <button
-                    onClick={() => setSelectedInquiry(inquiry)}
-                    className="text-[#B78628] hover:text-[#96691E] text-sm"
-                  >
-                    צפה בפרטים
-                  </button>
-                </td>
+        <div className="bg-white rounded-lg shadow overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 w-1/2">שם</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 w-1/4">סטטוס</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 w-1/4">פעולות</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {inquiries.map((inquiry) => (
+                <tr key={inquiry._id}>
+                  <td className="px-4 py-3">
+                    <div className="text-sm leading-5 text-gray-900 break-words">
+                      {inquiry.contactName}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className={`${getStatusColor(inquiry.status)} text-sm`}>
+                      {getStatusText(inquiry.status)}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <button
+                      onClick={() => setSelectedInquiry(inquiry)}
+                      className="text-[#B78628] hover:text-[#96691E] text-sm"
+                    >
+                      צפה בפרטים
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+    </ErrorBoundary>
   );
 } 

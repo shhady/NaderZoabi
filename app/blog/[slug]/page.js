@@ -27,7 +27,7 @@ export default function BlogPostPage() {
     };
 
     fetchPost();
-  }, [slug]);
+  }, [slug, baseUrl]);
 
   if (loading) {
     return (
