@@ -1,20 +1,13 @@
-import { authMiddleware } from "@clerk/nextjs";
+import { clerkMiddleware } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 
-export default authMiddleware({
-  publicRoutes: [
-    "/",
-    "/blog",
-    "/services",
-    "/contact",
-    "/api/webhook",
-    "/api/uploadthing"
-  ],
-  ignoredRoutes: [
-    "/api/webhook",
-    "/api/uploadthing"
-  ]
+export default clerkMiddleware((req) => {
+  return NextResponse.next();
 });
 
 export const config = {
-  matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"],
+  matcher: [
+    "/((?!.*\\..*|_next).*)",
+    "/api/(.*)",
+  ],
 };
