@@ -88,7 +88,7 @@ export default function Home() {
                   src={'/user-avatar.png'}
                   alt={accountant.name}
                   width={120}
-                  height={120}
+                  height={130}
                   className="rounded-full object-cover"
                 />
                 <div>
