@@ -27,13 +27,11 @@ export default function BlogPage() {
     fetchPosts();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="text-center py-10">
-        <p className="text-gray-600">טוען...</p>
-      </div>
-    );
-  }
+  // if (loading) {
+  //   return (
+      
+  //   );
+  // }
 
   return (
     <div className="min-h-screen bg-white">
@@ -47,8 +45,9 @@ export default function BlogPage() {
           </p>
         </div>
       </div>
-
-      <div className="container mx-auto px-6 py-20">
+{loading ? (<div className="text-center py-10">
+        <p className="text-gray-600">טוען...</p>
+      </div>):( <div className="container mx-auto px-6 py-20">
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {posts.map((post) => (
             <article 
@@ -89,7 +88,8 @@ export default function BlogPage() {
             </article>
           ))}
         </div>
-      </div>
+      </div>)}
+     
     </div>
   );
 } 
