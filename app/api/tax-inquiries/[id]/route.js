@@ -1,5 +1,5 @@
 import { connectToDB } from '@/lib/db';
-import { TaxInquiry } from '@/lib/models/TaxInquiry';
+import { TaxInquiry } from '@/lib/models/taxInquiry';
 import { NextResponse } from 'next/server';
 
 export async function PATCH(req, { params }) {
