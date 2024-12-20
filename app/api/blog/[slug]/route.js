@@ -1,5 +1,5 @@
 import { connectToDB } from '@/lib/db';
-import { BlogPost } from '@/lib/models/BlogPost';
+import { BlogPost } from '@/lib/models/Blog';
 import { NextResponse } from 'next/server';
 
 export async function GET(request, { params }) {
