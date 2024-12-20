@@ -1,8 +1,9 @@
-import { ClerkProvider } from '@/components/providers/ClerkProvider';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import './globals.css';
-
+import {
+    ClerkProvider,
+  } from '@clerk/nextjs'
 export const metadata = {
   title: 'משרד רואי חשבון זועבי',
   description: 'פתרונות חשבונאות מקצועיים לעסקים ויחידים',
