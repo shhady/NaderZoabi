@@ -12,7 +12,7 @@ export async function GET() {
 
     await connectToDB();
 
-    // Get only pending documents count
+    // Get only pending documents count1
     const pendingDocsCount = await Document.countDocuments({ status: 'ממתין' });
 
     return NextResponse.json({ 
