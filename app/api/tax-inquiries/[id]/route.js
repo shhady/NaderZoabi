@@ -47,28 +47,38 @@ export async function PATCH(request, { params }) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    await connectToDB();
     const { id } = params;
-    const data = await request.json();
+    const { status } = await request.json();
+
+    // Validate status
+    const validStatuses = ['ממתין', 'בטיפול', 'הושלם'];
+    if (!validStatuses.includes(status)) {
+      return NextResponse.json(
+        { error: "Invalid status value" },
+        { status: 400 }
+      );
+    }
+
+    await connectToDB();
 
     const updatedInquiry = await TaxInquiry.findByIdAndUpdate(
       id,
-      { status: data.status },
+      { status },
       { new: true }
     );
 
     if (!updatedInquiry) {
       return NextResponse.json(
-        { error: 'Inquiry not found' },
+        { error: "Tax inquiry not found" },
         { status: 404 }
       );
     }
 
     return NextResponse.json(updatedInquiry);
   } catch (error) {
-    console.error('Error updating inquiry:', error);
+    console.error("Error updating tax inquiry:", error);
     return NextResponse.json(
-      { error: 'Error updating inquiry' },
+      { error: "Error updating tax inquiry" },
       { status: 500 }
     );
   }

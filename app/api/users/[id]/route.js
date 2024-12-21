@@ -1,52 +1,29 @@
-import { connectToDB } from '@/lib/db';
-import { User } from '@/lib/models/User';
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 import { currentUser } from "@clerk/nextjs/server";
-import mongoose from 'mongoose';
+import { connectToDB } from "@/lib/db";
+import { User } from "@/lib/models/User";
 
 export async function GET(request, { params }) {
   try {
     const user = await currentUser();
-    if (!user?.publicMetadata?.role === 'admin') {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    await connectToDB();
     const { id } = params;
 
-    // Validate MongoDB ObjectId
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return NextResponse.json(
-        { error: 'Invalid ID format' },
-        { status: 400 }
-      );
+    await connectToDB();
+    const dbUser = await User.findOne({ clerkId: id });
+
+    if (!dbUser) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const userData = await User.findById(id);
-
-    if (!userData) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
-    }
-
-    // Get documents for this user (when implemented)
-    // const documents = await Document.find({
-    //   $or: [
-    //     { uploadedBy: id },
-    //     { uploadedFor: id }
-    //   ]
-    // });
-
-    return NextResponse.json({
-      ...userData.toObject(),
-      // documents: documents // Will be added when document functionality is implemented
-    });
+    return NextResponse.json(dbUser);
   } catch (error) {
-    console.error('Error fetching user:', error);
+    console.error("Error fetching user:", error);
     return NextResponse.json(
-      { error: 'Error fetching user' },
+      { error: "Error fetching user" },
       { status: 500 }
     );
   }

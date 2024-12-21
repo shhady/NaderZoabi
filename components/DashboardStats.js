@@ -2,14 +2,19 @@
 
 import { useState, useEffect } from 'react';
 import LoadingSpinner from './LoadingSpinner';
+import { useUser } from '@clerk/nextjs';
 
 export default function DashboardStats() {
   const [stats, setStats] = useState({
     totalDocuments: 0,
     recentUploads: 0,
-    pendingTasks: 0
+    pendingTasks: 0,
+    pendingDocs: 0,
+    pendingTax: 0
   });
   const [loading, setLoading] = useState(true);
+  const { user } = useUser();
+  const isAdmin = user?.publicMetadata?.role === 'admin';
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -18,6 +23,16 @@ export default function DashboardStats() {
         if (response.ok) {
           const data = await response.json();
           setStats(data);
+        }
+
+        const pendingResponse = await fetch('/api/documents/pending-count');
+        if (pendingResponse.ok) {
+          const pendingData = await pendingResponse.json();
+          setStats(prev => ({
+            ...prev,
+            pendingDocs: pendingData.documents,
+            pendingTax: pendingData.taxInquiries
+          }));
         }
       } catch (error) {
         console.error('Error fetching stats:', error);
@@ -41,10 +56,21 @@ export default function DashboardStats() {
         <h3 className="text-lg font-medium text-gray-900 mb-2">העלאות אחרונות</h3>
         <p className="text-3xl font-bold text-[#B78628]">{stats.recentUploads}</p>
       </div>
-      <div className="bg-white rounded-lg shadow p-6">
+     {isAdmin &&  <div className="bg-white rounded-lg shadow p-6">
         <h3 className="text-lg font-medium text-gray-900 mb-2">משימות בהמתנה</h3>
-        <p className="text-3xl font-bold text-[#B78628]">{stats.pendingTasks}</p>
-      </div>
+        <p className="text-3xl font-bold text-[#B78628]">{stats.pendingDocs + stats.pendingTax}</p>
+        <div className="mt-2 text-sm text-gray-600">
+          <div className="flex justify-between">
+            <span>מסמכים:</span>
+            <span>{stats.pendingDocs}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>שאילתות מס:</span>
+            <span>{stats.pendingTax}</span>
+          </div>
+        </div>
+      </div>}
     </div>
   );
 } 
+

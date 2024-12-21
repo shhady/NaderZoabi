@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^4.29.7",
+    "@heroicons/react": "^2.2.0",
+    "@supabase/supabase-js": "^2.47.10",
     "@uiw/react-md-editor": "^4.0.5",
     "firebase": "^10.8.0",
     "leaflet": "^1.9.4",

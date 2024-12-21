@@ -29,14 +29,14 @@ export async function POST(req) {
     if (existingUser) {
       return NextResponse.json(existingUser);
     }
-
+    
     // Create new user
     const newUser = await User.create({
       clerkId: data.clerkId,
       email: data.email,
-      firstName: data.firstName,
+      firstName: data.firstName,  
       lastName: data.lastName,
-      role: 'client'
+      role: data.role
     });
 
     return NextResponse.json(newUser);

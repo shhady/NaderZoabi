@@ -4,18 +4,19 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 
-const navigation = [
-  { name: 'לוח בקרה', href: '/dashboard' },
-  { name: 'מסמכים', href: '/dashboard/documents' },
-  { name: 'העלאת קבצים', href: '/dashboard/files/upload' },
-  { name: 'משתמשים', href: '/dashboard/users', adminOnly: true },
-  { name: 'בלוג', href: '/dashboard/blog', adminOnly: true },
-];
-
 export default function Sidebar() {
-  const pathname = usePathname();
   const { user } = useUser();
+  const pathname = usePathname();
   const isAdmin = user?.publicMetadata?.role === 'admin';
+
+  const navigation = [
+    { name: 'לוח בקרה', href: '/dashboard' },
+    { name: 'מסמכים', href: '/dashboard/documents' },
+    { name: 'העלאת קבצים', href: '/dashboard/files/upload' },
+    { name: 'שאילתות מס', href: '/dashboard/tax-inquiries', adminOnly: true },
+    { name: 'משתמשים', href: '/dashboard/users', adminOnly: true },
+    { name: 'בלוג', href: '/dashboard/blog', adminOnly: true },
+  ];
 
   const filteredNavigation = navigation.filter(item => {
     if (item.adminOnly && !isAdmin) return false;

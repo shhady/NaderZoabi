@@ -2,13 +2,15 @@
 
 import Link from 'next/link';
 import { UserButton, useUser } from '@clerk/nextjs';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, isLoaded } = useUser();
+  const [userInitialized, setUserInitialized] = useState(false); // Track user initialization
+
   const isAdmin = user?.publicMetadata?.role === 'admin';
   const pathname = usePathname();
 
@@ -23,7 +25,39 @@ export default function Navbar() {
     if (path === '/' && pathname !== '/') return false;
     return pathname.startsWith(path);
   };
+  useEffect(() => {
+    const initializeUser = async () => {
+      if (!user || userInitialized) return; // Avoid redundant calls
 
+      try {
+        const response = await fetch('/api/users', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            clerkId: user?.id,
+            email: user?.emailAddresses[0]?.emailAddress,
+            firstName: user?.firstName,
+            lastName: user?.lastName,
+            role: user?.publicMetadata?.role ? user?.publicMetadata?.role : 'client'
+          }),
+        });
+
+        if (response.ok) {
+          setUserInitialized(true); // Mark user as initialized
+        } else {
+          console.error('Error initializing user:', await response.json());
+        }
+      } catch (error) {
+        console.error('Error initializing user:', error);
+      }
+    };
+
+    if (user?.id) {
+      initializeUser();
+    }
+  }, [user, userInitialized]);
   return (
     <nav className="bg-white shadow-md fixed top-0 left-0 right-0 z-50" >
       <div className="max-w-7xl mx-auto px-4">

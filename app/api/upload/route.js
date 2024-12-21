@@ -4,21 +4,35 @@ import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { connectToDB } from "@/lib/db";
 import { Document } from "@/lib/models/Document";
+import { User } from "@/lib/models/User";
 
 export async function POST(req) {
   try {
     const user = await currentUser();
-    if (user?.publicMetadata?.role !== 'admin') {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const formData = await req.formData();
-    const file = formData.get('file');
+    const files = formData.getAll('files');
+    const title = formData.get('title');
     const uploadedFor = formData.get('uploadedFor');
-    const uploadedBy = formData.get('uploadedBy');
 
-    if (!file) {
-      return NextResponse.json({ error: "No file provided" }, { status: 400 });
+    if (!files || files.length === 0) {
+      return NextResponse.json({ error: "No files provided" }, { status: 400 });
+    }
+
+    await connectToDB();
+
+    // Get user from our database
+    const dbUser = await User.findOne({ clerkId: user.id });
+    
+    // If user doesn't have a name in our database, return special error
+    if (!dbUser?.firstName || !dbUser?.lastName) {
+      return NextResponse.json(
+        { error: "NAME_REQUIRED" },
+        { status: 400 }
+      );
     }
 
     // Create uploads directory if it doesn't exist
@@ -35,38 +49,39 @@ export async function POST(req) {
       }
     }
 
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
+    // Process all files
+    const fileRecords = await Promise.all(files.map(async (file) => {
+      const bytes = await file.arrayBuffer();
+      const buffer = Buffer.from(bytes);
 
-    // Create unique filename
-    const timestamp = Date.now();
-    const originalName = file.name;
-    const fileName = `${timestamp}-${originalName}`;
-    const filePath = join(uploadDir, fileName);
-    
-    // Save file
-    await writeFile(filePath, buffer);
-    
-    // Create file URL
-    const fileUrl = `/uploads/${fileName}`;
+      const timestamp = Date.now();
+      const fileName = `${timestamp}-${file.name}`;
+      const filePath = join(uploadDir, fileName);
+      
+      await writeFile(filePath, buffer);
+      
+      return {
+        fileName: file.name,
+        fileUrl: `/uploads/${fileName}`,
+        fileType: file.type,
+        uploadedAt: new Date()
+      };
+    }));
 
-    // Connect to database
-    await connectToDB();
-
-    // Save to database
+    // Create document with user's full name from database
     const document = await Document.create({
-      fileName: originalName,
-      fileUrl,
-      fileType: file.type,
-      uploadedBy,
-      uploadedFor: uploadedFor || uploadedBy
+      title,
+      files: fileRecords,
+      uploadedBy: user.id,
+      uploaderName: dbUser.fullName || `${dbUser.firstName} ${dbUser.lastName}`, // Use fullName if exists, otherwise combine firstName and lastName
+      uploadedFor: uploadedFor || user.id
     });
 
     return NextResponse.json(document);
   } catch (error) {
-    console.error("Error uploading file:", error);
+    console.error("Error uploading files:", error);
     return NextResponse.json({ 
-      error: "Error uploading file", 
+      error: "Error uploading files", 
       details: error.message 
     }, { status: 500 });
   }
