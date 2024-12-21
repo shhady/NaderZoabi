@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { currentUser } from "@clerk/nextjs/server";
 import { uploadFile, getAccessibleFiles } from '@/lib/supabaseStorage';
+import { supabase } from '@/lib/supabaseClient';
 
 export async function POST(request) {
     try {
@@ -36,9 +37,9 @@ export async function POST(request) {
   
       return NextResponse.json(fileRecord);
     } catch (error) {
-      console.error("Error in POST /api/files:", error);
+      console.error('Error in files API:', error);
       return NextResponse.json(
-        { error: error.message || "Error uploading file" },
+        { error: error.message || 'Error processing request' },
         { status: 500 }
       );
     }
