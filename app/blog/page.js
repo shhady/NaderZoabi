@@ -78,12 +78,18 @@ export default function BlogPage() {
                 <p className="text-gray-600 mb-4">
                   {post.excerpt}
                 </p>
-                <Link
-                  href={`/blog/${post.slug}`}
-                  className="text-[#B78628] hover:text-[#96691E] font-medium"
-                >
-                  קרא עוד →
-                </Link>
+                <div className='flex justify-end items-end'>
+                {post._id && (
+                    <Link
+                      href={`/blog/${post._id}`}
+                      className="text-[#B78628] hover:text-[#96691E] font-medium"
+                    >
+                      קרא עוד ←  
+
+                    </Link>
+                  )}
+                </div>
+              
               </div>
             </article>
           ))}

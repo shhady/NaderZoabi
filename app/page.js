@@ -62,7 +62,12 @@ export default function Home() {
   return (
     <main className="bg-gray-50 min-h-screen" dir="rtl">
       {/* Hero Section */}
-      <section className="bg-gradient-to-b from-[#2C3E50] to-[#1C1C1C] text-white py-16">
+      <section 
+        className="bg-[url('/hero-image.webp')] bg-cover bg-center text-white py-16 relative"
+        style={{
+          backgroundImage: 'linear-gradient(to bottom, rgba(44, 62, 80, 0.5), rgba(28, 28, 28, 0.5)), url("/hero-image.webp")'
+        }}
+      >
         <div className="max-w-7xl mx-auto px-6 text-center">
           <h1 className="text-5xl font-bold mb-6">ברוכים הבאים למשרד זועבי</h1>
           <p className="text-xl mb-8">מומחים בייעוץ מס, הנהלת חשבונות וביקורת דוחות</p>
@@ -156,14 +161,18 @@ export default function Home() {
                   <p className="text-gray-600 mb-4">
                     {post.excerpt}
                   </p>
+                  <div className='flex justify-end items-end'>
                   {post._id && (
                     <Link
                       href={`/blog/${post._id}`}
                       className="text-[#B78628] hover:text-[#96691E] font-medium"
                     >
-                      קרא עוד →
+                      קרא עוד ←  
+
                     </Link>
                   )}
+                  </div>
+                  
                 </div>
               </article>
             ))}

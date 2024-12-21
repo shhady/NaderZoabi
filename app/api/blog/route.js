@@ -24,7 +24,6 @@ export async function POST(req) {
       title,
       content,
       excerpt,
-      slug,
       coverImage,
       author: user.id,
     });

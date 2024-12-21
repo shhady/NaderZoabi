@@ -62,7 +62,7 @@ export default function BlogManagementPage() {
       }
 
       const blog = await response.json();
-      router.push(`/blog/${blog.slug}`);
+      router.push(`/blog/${blog._id}`);
       router.refresh();
     } catch (error) {
       console.error('Error creating blog post:', error);
