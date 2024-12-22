@@ -25,10 +25,10 @@ export default function Sidebar() {
   return (
     <>
       {/* Mobile Hamburger Button */}
-      <div className="fixed top-20 right-4 z-40 md:hidden flex items-center gap-2 bg-white p-2 rounded-md shadow-lg">
+      <div className="fixed top-20 right-4 z-40 md:hidden  bg-white p-2 rounded-md shadow-lg">
         <button
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className="text-gray-600 hover:text-[#B78628] focus:outline-none"
+          className="text-gray-600 hover:text-[#B78628] focus:outline-none flex items-center gap-2"
         >
           <svg
             className="h-6 w-6"
@@ -45,12 +45,13 @@ export default function Sidebar() {
               <path d="M4 6h16M4 12h16M4 18h16" />
             )}
           </svg>
-        </button>
-        {!isSidebarOpen && (
+          {!isSidebarOpen && (
           <span className="text-gray-600 font-semibold">
             {isAdmin ? 'תפריט ניהול' : 'אזור אישי'}
           </span>
         )}
+        </button>
+       
       </div>
 
       {/* Overlay */}
