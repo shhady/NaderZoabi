@@ -86,11 +86,11 @@ export default function PrivateDocumentsList({ userId }) {
       </div>
 
       <Link
-        href={`/dashboard/documents/${document._id}`}
-        className="text-[#B78628] hover:text-[#96691E] inline-block active:text-[#96691E] touch-manipulation"
-      >
-        צפה בפרטים
-      </Link>
+                href={`/dashboard/documents/${document._id}`}
+                className="text-[#B78628] hover:text-[#96691E] inline-block"
+              >
+                צפה בפרטים
+              </Link>
     </div>
   );
 
