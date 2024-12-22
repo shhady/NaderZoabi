@@ -63,7 +63,7 @@ export default function PrivateDocumentsList({ userId }) {
   };
 
   const DocumentCard = ({ document }) => (
-    <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow">
+    <div className="bg-white p-6 rounded-lg shadow transition-shadow">
       <div className="flex justify-between items-start mb-4">
         <h3 className="font-medium text-lg line-clamp-2">{document.title}</h3>
         <span className={`px-2 py-1 rounded-full text-sm ${getStatusStyle(document.status)}`}>
@@ -87,7 +87,7 @@ export default function PrivateDocumentsList({ userId }) {
 
       <Link
         href={`/dashboard/documents/${document._id}`}
-        className="text-[#B78628] hover:text-[#96691E] inline-block"
+        className="text-[#B78628] hover:text-[#96691E] inline-block active:text-[#96691E] touch-manipulation"
       >
         צפה בפרטים
       </Link>
