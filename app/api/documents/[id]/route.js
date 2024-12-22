@@ -43,7 +43,7 @@ export async function GET(request, { params }) {
       }
     }
 
-    // Get user names
+    // Get user names1
     const [uploader, recipient] = await Promise.all([
       User.findById(document.uploadedBy),
       User.findById(document.uploadedFor)
