@@ -4,12 +4,13 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import { supabase, BUCKET_NAME } from '@/lib/supabaseClient';
 
 export default function DocumentDetailsPage() {
   const { id } = useParams();
   const router = useRouter();
   const { user, isLoaded } = useUser();
-  const [document, setDocument] = useState(null);
+  const [documentData, setDocumentData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -44,7 +45,7 @@ export default function DocumentDetailsPage() {
       }
 
       const data = await response.json();
-      setDocument(data);
+      setDocumentData(data);
       setTitle(data.title);
       setStatus(data.status);
     } catch (error) {
@@ -75,7 +76,7 @@ export default function DocumentDetailsPage() {
       }
 
       const updatedDoc = await response.json();
-      setDocument(updatedDoc);
+      setDocumentData(updatedDoc);
       setIsEditing(false);
     } catch (error) {
       console.error('Error updating document:', error);
@@ -104,6 +105,57 @@ export default function DocumentDetailsPage() {
     }
   };
 
+  const handleDownload = async (file) => {
+    try {
+      // First try to use the public URL if available
+      if (file.fileUrl) {
+        const response = await fetch(file.fileUrl);
+        if (!response.ok) throw new Error('Failed to fetch file');
+        
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = file.fileName;
+        document.body.appendChild(link);
+        link.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(link);
+        return;
+      }
+
+      // Fallback to Supabase storage download
+      const { data, error } = await supabase.storage
+        .from(BUCKET_NAME)
+        .createSignedUrl(file.storagePath, 60); // URL expires in 60 seconds
+
+      if (error) {
+        console.error('Error creating signed URL:', error);
+        throw error;
+      }
+
+      // Use the signed URL to download
+      const response = await fetch(data.signedUrl);
+      if (!response.ok) throw new Error('Failed to fetch file');
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = file.fileName;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+    } catch (error) {
+      console.error('Error downloading file:', error);
+      alert('שגיאה בהורדת הקובץ');
+    }
+  };
+
   if (!isLoaded || loading) {
     return <LoadingSpinner />;
   }
@@ -122,7 +174,7 @@ export default function DocumentDetailsPage() {
     );
   }
 
-  if (!document) return null;
+  if (!documentData) return null;
 
   const statusOptions = [
     { value: 'ממתין', label: 'ממתין' },
@@ -144,7 +196,7 @@ export default function DocumentDetailsPage() {
             {isAdmin && isEditing ? 'עריכת מסמך' : 'פרטי מסמך'}
           </h1>
         </div>
-        {document.canEdit && (
+        {documentData.canEdit && (
           <div className="flex gap-2">
             {isAdmin && (
               <>
@@ -159,8 +211,8 @@ export default function DocumentDetailsPage() {
                     <button
                       onClick={() => {
                         setIsEditing(false);
-                        setTitle(document.title);
-                        setStatus(document.status);
+                        setTitle(documentData.title);
+                        setStatus(documentData.status);
                       }}
                       className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
                     >
@@ -222,24 +274,24 @@ export default function DocumentDetailsPage() {
           ) : (
             <>
               <div>
-                <h2 className="text-xl font-semibold mb-2">{document.title}</h2>
+                <h2 className="text-xl font-semibold mb-2">{documentData.title}</h2>
                 <span className={`px-2 py-1 rounded-full text-sm ${
-                  document.status === 'ממתין' ? 'bg-yellow-100 text-yellow-800' :
-                  document.status === 'בטיפול' ? 'bg-blue-100 text-blue-800' :
+                  documentData.status === 'ממתין' ? 'bg-yellow-100 text-yellow-800' :
+                  documentData.status === 'בטיפול' ? 'bg-blue-100 text-blue-800' :
                   'bg-green-100 text-green-800'
                 }`}>
-                  {document.status}
+                  {documentData.status}
                 </span>
               </div>
               <div className="flex flex-col gap-2">
                 <p className="text-sm text-gray-600">
-                  הועלה על ידי: {document.uploaderName}
+                  הועלה על ידי: {documentData.uploaderName}
                 </p>
                 <p className="text-sm text-gray-600">
-                  שותף עם: {document.uploadedForName}
+                  שותף עם: {documentData.uploadedForName}
                 </p>
                 <p className="text-sm text-gray-600">
-                  תאריך העלאה: {new Date(document.createdAt).toLocaleDateString('he-IL')}
+                  תאריך העלאה: {new Date(documentData.createdAt).toLocaleDateString('he-IL')}
                 </p>
               </div>
             </>
@@ -248,20 +300,18 @@ export default function DocumentDetailsPage() {
           <div className="mt-6">
             <h3 className="font-medium mb-2">קבצים:</h3>
             <div className="space-y-2">
-              {document.files.map((file, index) => (
+              {documentData.files.map((file, index) => (
                 <div
                   key={index}
                   className="flex items-center justify-between bg-gray-50 p-3 rounded"
                 >
                   <span>{file.fileName}</span>
-                  <a
-                    href={file.fileUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <button
+                    onClick={() => handleDownload(file)}
                     className="text-[#B78628] hover:text-[#96691E]"
                   >
                     הורד
-                  </a>
+                  </button>
                 </div>
               ))}
             </div>

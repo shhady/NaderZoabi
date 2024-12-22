@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { useUser } from '@clerk/nextjs';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import FileUpload from '@/components/FileUpload';
-import DocumentsList from '@/components/DocumentsList';
-import { useUser } from '@clerk/nextjs';
+import PrivateDocumentsList from '@/components/PrivateDocumentsList';
 
-export default function UserDetailsPage() {
+export default function UserProfilePage() {
   const { id } = useParams();
   const router = useRouter();
   const { user: currentUser } = useUser();
@@ -20,22 +20,25 @@ export default function UserDetailsPage() {
       router.push('/dashboard');
       return;
     }
+
+    const fetchUser = async () => {
+      try {
+        // First get the MongoDB user to get their clerkId
+        const response = await fetch(`/api/users/${id}`);
+        if (!response.ok) {
+          throw new Error('User not found');
+        }
+        const userData = await response.json();
+        setUser(userData);
+      } catch (error) {
+        console.error('Error fetching user:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchUser();
   }, [id, isAdmin, router]);
-
-  const fetchUser = async () => {
-    try {
-      const response = await fetch(`/api/users/${currentUser.id}`);
-      if (response.ok) {
-        const data = await response.json();
-        setUser(data);
-      }
-    } catch (error) {
-      console.error('Error fetching user:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (loading) return <LoadingSpinner />;
 
@@ -59,29 +62,37 @@ export default function UserDetailsPage() {
         </button>
       </div>
 
-      <div className="grid gap-6">
-        {/* User Information */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold mb-4">פרטים אישיים</h2>
-          <div className="space-y-2">
-            <p><span className="font-medium">שם:</span> {user.firstName} {user.lastName}</p>
-            <p><span className="font-medium">אימייל:</span> {user.email}</p>
-            <p><span className="font-medium">תאריך הצטרפות:</span> {new Date(user.createdAt).toLocaleDateString('he-IL')}</p>
+      <div className="bg-white rounded-lg shadow p-6">
+        <div className="flex items-center gap-6">
+          {user.imageUrl && (
+            <img
+              src={user.imageUrl}
+              alt={`${user.firstName} ${user.lastName}`}
+              className="w-24 h-24 rounded-full object-cover"
+            />
+          )}
+          <div>
+            <h2 className="text-xl font-semibold">
+              {user.firstName} {user.lastName}
+            </h2>
+            <p className="text-gray-600">{user.email}</p>
+            <p className="text-sm text-gray-500">
+              הצטרף בתאריך: {new Date(user.createdAt).toLocaleDateString('he-IL')}
+            </p>
           </div>
         </div>
+      </div>
 
-        {/* Documents Section */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold mb-4">מסמכים</h2>
-            <FileUpload userId={user.clerkId} onUploadComplete={fetchUser} />
-          </div>
-          <DocumentsList 
-            userId={user.clerkId} 
-            hideFilters={false}
-            showUploadedFor={true}
-          />
-        </div>
+      {/* File Upload Section */}
+      <div className="bg-white rounded-lg shadow p-6">
+        <h2 className="text-xl font-semibold mb-4">העלאת מסמכים למשתמש</h2>
+        <FileUpload fixedUserId={id} />
+      </div>
+
+      {/* Documents List */}
+      <div className="bg-white rounded-lg shadow p-6">
+        <h2 className="text-xl font-semibold mb-4">מסמכים</h2>
+        <PrivateDocumentsList userId={id} />
       </div>
     </div>
   );

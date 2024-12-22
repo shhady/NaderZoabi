@@ -4,17 +4,16 @@ import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { supabase, BUCKET_NAME } from '@/lib/supabaseClient';
 
-export default function FileUpload() {
+export default function FileUpload({ fixedUserId }) {
   const { user } = useUser();
   const [uploadedFiles, setUploadedFiles] = useState([]);
-  const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState('');
-  const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState([]);
+  const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(true);
   const isAdmin = user?.publicMetadata?.role === 'admin';
-
-  useEffect(() => {
+useEffect(() => {
     const fetchUsers = async () => {
       try {
         const response = await fetch('/api/users');
@@ -27,14 +26,9 @@ export default function FileUpload() {
       } finally {
         setLoading(false);
       }
-    };
-
-    if (isAdmin) {
-      fetchUsers();
-    } else {
-      setLoading(false);
     }
-  }, [isAdmin]);
+    fetchUsers();
+  }, []);
 
   const handleFileSelect = (e) => {
     const files = Array.from(e.target.files);
@@ -53,23 +47,35 @@ export default function FileUpload() {
     setUploading(true);
 
     try {
-      // Get current user's MongoDB ID
+      // Get current user's MongoDB ID (uploader)
       const userResponse = await fetch(`/api/users/${user.id}`);
       if (!userResponse.ok) {
         throw new Error('Failed to get user info');
       }
       const currentUser = await userResponse.json();
 
-      // Determine uploadedFor based on user role and selection
-      let uploadedForId = currentUser._id; // Default to current user
-      
-      if (isAdmin && selectedUser) {
-        const recipientResponse = await fetch(`/api/users/${selectedUser}`);
+      // Get recipient's MongoDB ID
+      let uploadedForId;
+      if (fixedUserId) {
+        // If fixedUserId is provided, use it directly
+        const recipientResponse = await fetch(`/api/users/${fixedUserId}`);
         if (!recipientResponse.ok) {
           throw new Error('Failed to get recipient info');
         }
         const recipientUser = await recipientResponse.json();
         uploadedForId = recipientUser._id;
+      } else {
+        // Otherwise use the selected user
+        if (isAdmin && selectedUser) {
+          const recipientResponse = await fetch(`/api/users/${selectedUser}`);
+          if (!recipientResponse.ok) {
+            throw new Error('Failed to get recipient info');
+          }
+          const recipientUser = await recipientResponse.json();
+          uploadedForId = recipientUser._id;
+        } else {
+          uploadedForId = currentUser._id;
+        }
       }
 
       // Upload files to Supabase
@@ -80,18 +86,23 @@ export default function FileUpload() {
           
           const { data, error } = await supabase.storage
             .from(BUCKET_NAME)
-            .upload(fileName, file);
+            .upload(`${fileName}`, file, {
+              cacheControl: '3600',
+              upsert: false
+            });
 
           if (error) throw error;
 
-          const { data: urlData } = supabase.storage
+          // Get the public URL
+          const { data: { publicUrl } } = supabase.storage
             .from(BUCKET_NAME)
             .getPublicUrl(fileName);
 
           return {
             fileName: file.name,
-            fileUrl: urlData.publicUrl,
+            fileUrl: publicUrl,
             fileType: file.type,
+            storagePath: fileName // Store the path for future reference
           };
         })
       );
@@ -131,14 +142,10 @@ export default function FileUpload() {
     }
   };
 
-  if (loading) {
-    return <div className="text-center py-4">טוען...</div>;
-  }
-
   return (
     <div className="space-y-4">
-      {/* User Selection Dropdown - Only show for admin */}
-      {isAdmin && (
+      {/* Only show user selection if no fixedUserId is provided and user is admin */}
+      {isAdmin && !fixedUserId && (
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             בחר משתמש להעלאת קבצים עבורו
@@ -149,7 +156,7 @@ export default function FileUpload() {
             className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-[#B78628]"
           >
             <option value="">בחר משתמש</option>
-            {users.map((u) => (
+            {users?.map((u) => (
               <option key={u.clerkId} value={u.clerkId}>
                 {u.firstName} {u.lastName} - {u.email}
               </option>

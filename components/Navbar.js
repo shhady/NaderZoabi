@@ -13,7 +13,7 @@ export default function Navbar() {
 
   const isAdmin = user?.publicMetadata?.role === 'admin';
   const pathname = usePathname();
-
+  console.log(user);
   const navLinks = [
     { href: '/contact', label: 'צור קשר' },
     { href: '/blog', label: 'בלוג' },
@@ -40,6 +40,7 @@ export default function Navbar() {
             email: user?.emailAddresses[0]?.emailAddress,
             firstName: user?.firstName,
             lastName: user?.lastName,
+            imageUrl: user?.imageUrl,
             role: user?.publicMetadata?.role ? user?.publicMetadata?.role : 'client'
           }),
         });

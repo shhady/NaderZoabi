@@ -26,14 +26,22 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-2xl font-semibold text-[#2C3E50]">לוח בקרה</h1>
+      <div className="flex justify-between items-center">
 
+      <h1 className="text-2xl font-semibold text-[#2C3E50]">לוח בקרה</h1>
+      <Link
+          href="/dashboard/files/upload"
+          className="bg-[#B78628] text-white px-4 py-2 rounded-md hover:bg-[#96691E] transition-colors"
+        >
+          העלאת קבצים
+        </Link>
+      </div>
       <DashboardStats />
 
       {/* Only show documents shared with me (received documents) */}
       <div className="bg-white rounded-lg shadow p-6">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-[#2C3E50]">קבצים להורדה</h2>
+          <h2 className="text-xl font-semibold text-[#2C3E50]">התקבלו לאחרונה</h2>
           <Link
             href="/dashboard/documents?type=received"
             className="text-[#B78628] hover:text-[#96691E]"

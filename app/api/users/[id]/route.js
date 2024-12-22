@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { currentUser } from "@clerk/nextjs/server";
 import { connectToDB } from "@/lib/db";
 import { User } from "@/lib/models/User";
+import mongoose from 'mongoose';
 
 export async function GET(request, { params }) {
   try {
@@ -11,9 +12,15 @@ export async function GET(request, { params }) {
     }
 
     const { id } = params;
-
     await connectToDB();
-    const dbUser = await User.findOne({ clerkId: id });
+
+    // First try to find by clerkId
+    let dbUser = await User.findOne({ clerkId: id });
+
+    // If not found, check if id is a valid ObjectId and try to find by _id
+    if (!dbUser && mongoose.Types.ObjectId.isValid(id)) {
+      dbUser = await User.findById(id);
+    }
 
     if (!dbUser) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });

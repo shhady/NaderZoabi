@@ -3,7 +3,7 @@ import { currentUser } from "@clerk/nextjs/server";
 import { connectToDB } from "@/lib/db";
 import { Document } from "@/lib/models/Document";
 import { User } from "@/lib/models/User";
-
+import { TaxInquiry } from "@/lib/models/TaxInquiry";
 export async function GET() {
   try {
     const user = await currentUser();
@@ -24,14 +24,13 @@ export async function GET() {
 
     if (isAdmin) {
       // For admin, get total documents and pending documents
-      const [totalDocuments, pendingDocs] = await Promise.all([
+      const [totalDocuments, pendingDocs, pendingTax] = await Promise.all([
         Document.countDocuments({}),
-        Document.countDocuments({ status: 'ממתין' })
+        Document.countDocuments({ status: 'ממתין' }),
+        TaxInquiry.countDocuments({ status: 'ממתין' })
       ]);
 
-      // For now, pendingTax is set to 0, you can add real tax inquiries later
-      const pendingTax = 0;
-
+      console.log(pendingTax);
       stats = {
         totalDocuments,
         pendingDocs,
