@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { currentUser } from "@clerk/nextjs/server";
 import { connectToDB } from "@/lib/db";
 import { Document } from "@/lib/models/Document";
+import { User } from "@/lib/models/User";
 import { unlink } from 'fs/promises';
 import { join } from 'path';
 import mongoose from 'mongoose';
@@ -13,41 +14,52 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    await connectToDB();
     const { id } = params;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return NextResponse.json(
-        { error: 'Invalid ID format' },
-        { status: 400 }
-      );
-    }
-
-    const document = await Document.findById(id);
     const isAdmin = user?.publicMetadata?.role === 'admin';
 
+    await connectToDB();
+
+    // Get current user's MongoDB ID
+    const currentDbUser = await User.findOne({ clerkId: user.id });
+    if (!currentDbUser) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    // Find the document
+    const document = await Document.findById(id);
     if (!document) {
-      return NextResponse.json(
-        { error: 'Document not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Document not found" }, { status: 404 });
     }
 
-    // Check if user has access to this document
-    if (!isAdmin && 
-        document.uploadedBy !== user.id && 
-        document.uploadedFor !== user.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+    // Access control
+    if (!isAdmin) {
+      // Non-admin can only see documents where they are uploadedFor or uploadedBy
+      const canAccess = 
+        document.uploadedFor.toString() === currentDbUser._id.toString() || 
+        document.uploadedBy.toString() === currentDbUser._id.toString();
+
+      if (!canAccess) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+      }
     }
 
-    return NextResponse.json(document);
+    // Get user names
+    const [uploader, recipient] = await Promise.all([
+      User.findById(document.uploadedBy),
+      User.findById(document.uploadedFor)
+    ]);
+
+    return NextResponse.json({
+      ...document.toObject(),
+      uploaderName: uploader ? `${uploader.firstName} ${uploader.lastName}` : 'משתמש לא ידוע',
+      uploadedForName: recipient ? `${recipient.firstName} ${recipient.lastName}` : 'משתמש לא ידוע',
+      canEdit: isAdmin || document.uploadedBy.toString() === currentDbUser._id.toString()
+    });
+
   } catch (error) {
-    console.error('Error fetching document:', error);
+    console.error("Error fetching document:", error);
     return NextResponse.json(
-      { error: 'Error fetching document' },
+      { error: "Error fetching document" },
       { status: 500 }
     );
   }
@@ -65,27 +77,25 @@ export async function DELETE(request, { params }) {
 
     await connectToDB();
 
+    // Get current user's MongoDB ID
+    const currentDbUser = await User.findOne({ clerkId: user.id });
+    if (!currentDbUser) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
     // Get document
     const document = await Document.findById(id);
     if (!document) {
       return NextResponse.json({ error: "Document not found" }, { status: 404 });
     }
 
-    // Check permissions
-    if (!isAdmin && document.uploadedBy !== user.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    // Access control - allow both admin and document creator to delete
+    const canDelete = 
+      isAdmin || 
+      document.uploadedBy.toString() === currentDbUser._id.toString();
 
-    // Delete physical files
-    const publicDir = join(process.cwd(), 'public');
-    for (const file of document.files) {
-      try {
-        const filePath = join(publicDir, file.fileUrl.slice(1)); // Remove leading slash
-        await unlink(filePath);
-      } catch (err) {
-        console.error(`Error deleting file: ${err.message}`);
-        // Continue with other files even if one fails
-      }
+    if (!canDelete) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
     // Delete document from database
@@ -109,31 +119,52 @@ export async function PATCH(request, { params }) {
     }
 
     const { id } = params;
-    const { status } = await request.json();
+    const isAdmin = user?.publicMetadata?.role === 'admin';
+    const data = await request.json();
 
     await connectToDB();
-    
+
+    // Get current user's MongoDB ID
+    const currentDbUser = await User.findOne({ clerkId: user.id });
+    if (!currentDbUser) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    // Find the document
     const document = await Document.findById(id);
     if (!document) {
       return NextResponse.json({ error: "Document not found" }, { status: 404 });
     }
 
-    // Update status and viewed flag
-    const updates = { status };
-    if (!document.viewed) {
-      updates.viewed = true;
-      if (!status) {
-        updates.status = 'בטיפול';
-      }
+    // Access control - allow both admin and document creator to update
+    const canModify = 
+      isAdmin || 
+      document.uploadedBy.toString() === currentDbUser._id.toString();
+
+    if (!canModify) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
-    const updatedDoc = await Document.findByIdAndUpdate(
+    // Update document
+    const updatedDocument = await Document.findByIdAndUpdate(
       id,
-      { $set: updates },
+      { $set: data },
       { new: true }
     );
 
-    return NextResponse.json(updatedDoc);
+    // Get user names
+    const [uploader, recipient] = await Promise.all([
+      User.findById(updatedDocument.uploadedBy),
+      User.findById(updatedDocument.uploadedFor)
+    ]);
+
+    return NextResponse.json({
+      ...updatedDocument.toObject(),
+      uploaderName: uploader ? `${uploader.firstName} ${uploader.lastName}` : 'משתמש לא ידוע',
+      uploadedForName: recipient ? `${recipient.firstName} ${recipient.lastName}` : 'משתמש לא ידוע',
+      canEdit: isAdmin || updatedDocument.uploadedBy.toString() === currentDbUser._id.toString()
+    });
+
   } catch (error) {
     console.error("Error updating document:", error);
     return NextResponse.json(

@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@clerk/localizations": "^3.9.5",
     "@clerk/nextjs": "^4.29.7",
     "@heroicons/react": "^2.2.0",
     "@supabase/supabase-js": "^2.47.10",

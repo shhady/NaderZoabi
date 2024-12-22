@@ -5,6 +5,7 @@ import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import Sidebar from './components/Sidebar';
 import DashboardHeader from '@/components/DashboardHeader';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 export default function DashboardLayout({ children }) {
   const { user, isLoaded } = useUser();
@@ -30,14 +31,16 @@ export default function DashboardLayout({ children }) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <DashboardHeader />
-      <div className="flex min-h-screen relative pt-2">
-        <Sidebar />
-        <main className="flex-1 p-8">
-          {children}
-        </main>
+    <ErrorBoundary>
+      <div className="min-h-screen bg-gray-50">
+        <DashboardHeader />
+        <div className="flex min-h-screen relative pt-2">
+          <Sidebar />
+          <main className="flex-1 p-8">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </ErrorBoundary>
   );
 } 

@@ -11,10 +11,7 @@ export async function POST(request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const formData = await request.formData();
-    const title = formData.get('title');
-    const files = formData.getAll('files');
-    const uploadedForClerkId = formData.get('uploadedFor'); // This is a Clerk ID
+    const { title, files, uploadedFor: uploadedForClerkId } = await request.json();
 
     if (!files || files.length === 0) {
       return NextResponse.json({ error: "No files provided" }, { status: 400 });
@@ -37,16 +34,15 @@ export async function POST(request) {
       }
     }
 
+    // Create document
     const document = await Document.create({
       title,
       files: files.map(file => ({
-        fileName: file.name,
-        fileUrl: file.url,
-        fileType: file.type,
+        ...file,
         uploadedAt: new Date()
       })),
-      uploadedBy: uploaderUser._id, // Use MongoDB ObjectId
-      uploadedFor: recipientUser._id, // Use MongoDB ObjectId
+      uploadedBy: uploaderUser._id,
+      uploadedFor: recipientUser._id,
       status: 'ממתין',
       viewed: false
     });

@@ -5,7 +5,7 @@ import { useUser } from '@clerk/nextjs';
 import Link from 'next/link';
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 
-export default function DocumentsList({ userId, hideFilters = false, limit }) {
+export default function DocumentsList({ userId, hideFilters = false, limit, type }) {
   const { user } = useUser();
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,16 +18,20 @@ export default function DocumentsList({ userId, hideFilters = false, limit }) {
 
   useEffect(() => {
     fetchDocuments();
-  }, [userId, limit]);
+  }, [userId, limit, type]);
 
   const fetchDocuments = async () => {
     try {
-      let url = userId 
-        ? `/api/documents?userId=${userId}`
-        : '/api/documents';
+      let url = '/api/documents';
       
-      if (limit) {
-        url += `${url.includes('?') ? '&' : '?'}limit=${limit}`;
+      // Add query parameters
+      const params = new URLSearchParams();
+      if (userId) params.append('userId', userId);
+      if (limit) params.append('limit', limit);
+      if (type) params.append('type', type);
+      
+      if (params.toString()) {
+        url += `?${params.toString()}`;
       }
       
       const response = await fetch(url);

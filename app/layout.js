@@ -2,6 +2,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import './globals.css';
 import { ClerkProvider } from '@clerk/nextjs';
+import { heIL } from '@clerk/localizations';
 
 export const metadata = {
   title: 'משרד רואי חשבון זועבי',
@@ -43,8 +44,8 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <ClerkProvider>
-      <html lang="he" dir="rtl">
+    <html lang="he" dir="rtl">
+      <ClerkProvider localization={heIL}>
         <head>
           <link rel="icon" href="/favicon.ico" sizes="any" />
           <link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32" />
@@ -59,7 +60,7 @@ export default function RootLayout({ children }) {
           </div>
           <Footer />
         </body>
-      </html>
-    </ClerkProvider>
+      </ClerkProvider>
+    </html>
   );
 } 

@@ -2,7 +2,7 @@
 
 import { Component } from 'react';
 
-export default class ErrorBoundary extends Component {
+class ErrorBoundary extends Component {
   constructor(props) {
     super(props);
     this.state = { hasError: false };
@@ -20,10 +20,10 @@ export default class ErrorBoundary extends Component {
     if (this.state.hasError) {
       return (
         <div className="text-center py-10">
-          <h2 className="text-2xl font-bold text-red-600 mb-4">משהו השתבש</h2>
+          <h1 className="text-2xl font-bold text-red-600">שגיאה בטעינת העמוד</h1>
           <button
             onClick={() => this.setState({ hasError: false })}
-            className="text-[#B78628] hover:text-[#96691E]"
+            className="mt-4 text-[#B78628] hover:text-[#96691E]"
           >
             נסה שוב
           </button>
@@ -33,4 +33,6 @@ export default class ErrorBoundary extends Component {
 
     return this.props.children;
   }
-} 
+}
+
+export default ErrorBoundary; 

@@ -5,20 +5,27 @@ import { useParams, useRouter } from 'next/navigation';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import FileUpload from '@/components/FileUpload';
 import DocumentsList from '@/components/DocumentsList';
+import { useUser } from '@clerk/nextjs';
 
 export default function UserDetailsPage() {
   const { id } = useParams();
   const router = useRouter();
+  const { user: currentUser } = useUser();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const isAdmin = currentUser?.publicMetadata?.role === 'admin';
 
   useEffect(() => {
+    if (!isAdmin) {
+      router.push('/dashboard');
+      return;
+    }
     fetchUser();
-  }, [id]);
+  }, [id, isAdmin, router]);
 
   const fetchUser = async () => {
     try {
-      const response = await fetch(`/api/users/${id}`);
+      const response = await fetch(`/api/users/${currentUser.id}`);
       if (response.ok) {
         const data = await response.json();
         setUser(data);
@@ -67,9 +74,13 @@ export default function UserDetailsPage() {
         <div className="bg-white rounded-lg shadow p-6">
           <div className="mb-6">
             <h2 className="text-xl font-semibold mb-4">מסמכים</h2>
-            <FileUpload userId={id} onUploadComplete={fetchUser} />
+            <FileUpload userId={user.clerkId} onUploadComplete={fetchUser} />
           </div>
-          <DocumentsList userId={id} />
+          <DocumentsList 
+            userId={user.clerkId} 
+            hideFilters={false}
+            showUploadedFor={true}
+          />
         </div>
       </div>
     </div>
